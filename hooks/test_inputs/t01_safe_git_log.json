@@ -1,0 +1,1 @@
+{"tool_input":{"command":"cd /project && git log --oneline -5"}}

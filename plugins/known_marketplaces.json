@@ -1,0 +1,18 @@
+{
+  "claude-plugins-official": {
+    "source": {
+      "source": "github",
+      "repo": "anthropics/claude-plugins-official"
+    },
+    "installLocation": "C:\\Users\\eric.liao\\.claude\\plugins\\marketplaces\\claude-plugins-official",
+    "lastUpdated": "2026-01-27T08:10:07.253Z"
+  },
+  "chuunibiyou-system": {
+    "source": {
+      "source": "git",
+      "url": "git@gitlab.jkopay.app:james.chang1/chuunibiyou-system.git"
+    },
+    "installLocation": "C:\\Users\\eric.liao\\.claude\\plugins\\marketplaces\\chuunibiyou-system",
+    "lastUpdated": "2026-01-09T08:58:56.687Z"
+  }
+}

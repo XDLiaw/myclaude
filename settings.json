@@ -1,0 +1,49 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_evaluate"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Read(./*.pem)",
+      "Read(./*.key)",
+
+      "Bash(printenv)",
+      "Bash(env)",
+      "Bash(set)",
+      "Bash(export)",
+      "Bash(setx *)",
+      "Bash(cat .env)",
+      "Bash(cat .env.*)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\eric.liao\\.claude\\skills\\argo-workflow-integrator",
+      "C:\\Users\\eric.liao\\AppData\\Local\\ms-playwright\\mcp-chrome-fe1b6d6",
+      "c:\\Workspace\\新保險\\jkopay-insurance\\app\\.claude\\plans"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash C:/Users/eric.liao/.claude/hooks/check_dangerous.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "ascii-art-0@chuunibiyou-system": true,
+    "code-review@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true
+  }
+}
