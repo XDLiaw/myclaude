@@ -90,8 +90,6 @@ spec:
           - name: instanceCount
           - name: instanceId
       container:
-        #TODO: 會影響kibana index，請遵照格式 {jkopay/jkos}-{app name}-{module name}
-        name: {jkopay/jkos}-{app}-{module}
         #TODO: 請修改為實際的 image，若不清楚可詢問SRE，或參考kustomization.yaml的images，冒號後面的tagId僅為placeholder，不須與kustomization.yaml中相同，但請務必確認image存在
         image: {container-image}
         #TODO: 請修改為實際的 command
@@ -164,8 +162,6 @@ spec:
           - name: instanceCount
           - name: instanceId
       container:
-        #TODO: 會影響kibana index，請遵照格式 {jkopay/jkos}-{app name}-{module name}
-        name: {jkopay/jkos}-{app}-{module}
         #TODO: 請修改為實際的 image，若不清楚可詢問SRE，或參考kustomization.yaml的images，冒號後面的tagId僅為placeholder，不須與kustomization.yaml中相同，但請務必確認image存在
         image: {container-image}
         envFrom:
@@ -234,8 +230,6 @@ spec:
           - name: instanceCount
           - name: instanceId
       container:
-        #TODO: 會影響kibana index，請遵照格式 {jkopay/jkos}-{app name}-{module name}
-        name: {jkopay/jkos}-{app}-{module}
         #TODO: 請修改為實際的 image，若不清楚可詢問SRE，或參考kustomization.yaml的images，冒號後面的tagId僅為placeholder，不須與kustomization.yaml中相同，但請務必確認image存在
         image: {container-image}
         envFrom:
