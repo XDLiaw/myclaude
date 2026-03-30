@@ -41,6 +41,10 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  },
   "enabledPlugins": {
     "ascii-art-0@chuunibiyou-system": true,
     "code-review@claude-plugins-official": true,
