@@ -69,6 +69,8 @@ spec:
                 value: '{{{{workflow.parameters.templateName}}}}'
               - key: status
                 value: '{{{{status}}}}'
+              - key: jobName
+                value: '{{{{workflow.labels.workflows.argoproj.io/cron-workflow}}}}'
             help: Count of execution by result status
             counter:
               value: '1'
@@ -81,6 +83,8 @@ spec:
                 value: '{{{{workflow.parameters.templateName}}}}'
               - key: status
                 value: '{{{{status}}}}'
+              - key: jobName
+                value: '{{{{workflow.labels.workflows.argoproj.io/cron-workflow}}}}'
             gauge:
               realtime: false
               value: '{{{{duration}}}}'
@@ -141,6 +145,8 @@ spec:
                 value: '{{{{workflow.parameters.templateName}}}}'
               - key: status
                 value: '{{{{status}}}}'
+              - key: jobName
+                value: '{{{{workflow.labels.workflows.argoproj.io/cron-workflow}}}}'
             help: Count of execution by result status
             counter:
               value: '1'
@@ -153,6 +159,8 @@ spec:
                 value: '{{{{workflow.parameters.templateName}}}}'
               - key: status
                 value: '{{{{status}}}}'
+              - key: jobName
+                value: '{{{{workflow.labels.workflows.argoproj.io/cron-workflow}}}}'
             gauge:
               realtime: false
               value: '{{{{duration}}}}'
@@ -209,6 +217,8 @@ spec:
                 value: '{{{{workflow.parameters.templateName}}}}'
               - key: status
                 value: '{{{{status}}}}'
+              - key: jobName
+                value: '{{{{workflow.labels.workflows.argoproj.io/cron-workflow}}}}'
             help: Count of execution by result status
             counter:
               value: '1'
@@ -221,6 +231,8 @@ spec:
                 value: '{{{{workflow.parameters.templateName}}}}'
               - key: status
                 value: '{{{{status}}}}'
+              - key: jobName
+                value: '{{{{workflow.labels.workflows.argoproj.io/cron-workflow}}}}'
             gauge:
               realtime: false
               value: '{{{{duration}}}}'
