@@ -63,17 +63,29 @@ return userRepository.findById(id);  // Missing this.
 
 ## Mermaid Diagram Convention
 
-**IMPORTANT:** When writing Mermaid diagrams in Markdown files, always wrap the mermaid code block with a white background `<div>` to ensure readability in VS Code dark mode.
+**IMPORTANT:** When writing Mermaid diagrams in Markdown files, must apply BOTH of the following to ensure readability in VS Code dark mode:
+
+1. Wrap with white background `<div>`: `<div style="background:#fff;padding:16px;border-radius:8px;">`
+2. Add `%%{init: {'theme': 'default'}}%%` as the **first line** inside the mermaid code block
+
+兩者缺一不可，白底 div 確保背景為白，default theme 確保節點顏色正常。
 
 Format:
 1. Opening tag: `<div style="background:#fff;padding:16px;border-radius:8px;">`
 2. A blank line
 3. The mermaid code block (triple backticks with mermaid language tag)
-4. A blank line
-5. Closing tag: `</div>`
+4. First line: `%%{init: {'theme': 'default'}}%%`
+5. Mermaid content
+6. A blank line
+7. Closing tag: `</div>`
 
 Rules:
-- Do NOT use `%%{init: {'theme': ...}}%%` directives — the white background div is sufficient
+- **首選**：`%%{init: {'theme': 'default'}}%%`
+- **備選方案**（若 default 效果不佳時依序嘗試）：
+  1. `%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#dce8f5', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#4a86c8', 'lineColor': '#555', 'secondaryColor': '#e6f3e6', 'tertiaryColor': '#fff5e6'}}}%%`
+  2. `%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#c9d9f0', 'primaryTextColor': '#111', 'primaryBorderColor': '#3366aa', 'lineColor': '#444', 'secondaryColor': '#d4edda', 'tertiaryColor': '#fce4b8', 'noteBkgColor': '#fff3cd'}}}%%`
+  3. `%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#d6e4f0', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#336699', 'lineColor': '#444', 'secondaryColor': '#d9ead3', 'tertiaryColor': '#fef2d4'}}}%%`
+  4. `%%{init: {'theme': 'forest'}}%%`
 - This applies to ALL mermaid diagram types (sequenceDiagram, flowchart, classDiagram, etc.)
 
 ## Plan Review Convention
