@@ -23,8 +23,7 @@ dangerous_patterns=(
   "docker system prune"
   "docker image prune"
   "docker container prune"
-  # 檔案刪除
-  "rm "
+  # 檔案刪除（rm 的細粒度規則在下方單獨處理）
   "del "
   "rd /s"
   # 檔案 in-place 修改
@@ -91,5 +90,30 @@ for pattern in "${dangerous_patterns[@]}"; do
     exit 2
   fi
 done
+
+# rm 細粒度規則：允許刪除當前目錄下的相對路徑檔案，攔截高風險操作
+if echo "$input" | grep -qE '\brm\b'; then
+  # 攔截：遞迴刪除 (-r, -rf, -fr)
+  if echo "$input" | grep -qE 'rm\s+(-[a-z]*r|-rf|-fr)'; then
+    echo "❌ 已攔截危險指令：rm 遞迴刪除" >&2
+    exit 2
+  fi
+  # 攔截：刪除絕對路徑 (rm /path 或 rm -f /path)
+  if echo "$input" | grep -qE 'rm\s+(-[a-z]+\s+)?/'; then
+    echo "❌ 已攔截危險指令：rm 絕對路徑" >&2
+    exit 2
+  fi
+  # 攔截：路徑跳脫 (..)
+  if echo "$input" | grep -qE 'rm\s.*\.\.'; then
+    echo "❌ 已攔截危險指令：rm 包含 .. 路徑跳脫" >&2
+    exit 2
+  fi
+  # 攔截：萬用字元刪除 (rm *, rm -f *)
+  if echo "$input" | grep -qE 'rm\s+(-[a-z]+\s+)?\*'; then
+    echo "❌ 已攔截危險指令：rm 萬用字元" >&2
+    exit 2
+  fi
+  # 其餘 rm（相對路徑指定檔案）→ 放行
+fi
 
 exit 0
