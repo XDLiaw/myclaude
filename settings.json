@@ -20,11 +20,7 @@
       "Bash(cat .env)",
       "Bash(cat .env.*)"
     ],
-    "additionalDirectories": [
-      "C:\\Users\\eric.liao\\.claude\\skills\\argo-workflow-integrator",
-      "C:\\Users\\eric.liao\\AppData\\Local\\ms-playwright\\mcp-chrome-fe1b6d6",
-      "c:\\Workspace\\新保險\\jkopay-insurance\\app\\.claude\\plans"
-    ]
+    "additionalDirectories": []
   },
   "hooks": {
     "PreToolUse": [
@@ -33,7 +29,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash C:/Users/eric.liao/.claude/hooks/check_dangerous.sh"
+            "command": "bash ~/.claude/hooks/check_dangerous.sh"
+          }
+        ]
+      }
+    ],
+    "ConfigChange": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/sync_plugins_md.js",
+            "timeout": 5
           }
         ]
       }
