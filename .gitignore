@@ -1,10 +1,7 @@
 .credentials.json
 history.jsonl
 cache/
-plugins/cache/
-plugins/blocklist.json
-plugins/install-counts-cache.json
-plugins/marketplaces/
+plugins/
 shell-snapshots/
 telemetry/
 statsig/
