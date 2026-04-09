@@ -12,6 +12,7 @@
 | [cron-schedule-helper](#cron-schedule-helper) | 自然語言 ↔ Cron 表達式轉換，執行時間預覽 | "每天凌晨2點", "這個 cron 什麼意思", "下次執行時間" |
 | [release-note-generator](#release-note-generator) | 根據 Git commit 自動生成 Release Note 文件 | "產生 release note", "生成上版文件", "寫 release note" |
 | [excel-comparator](#excel-comparator) | 批次比對 Excel 檔案內容，包含格式、小數點、時間格式等 | "比對 Excel", "Excel 差異", "檢查報表一致性" |
+| [elastalert-manager](#elastalert-manager) | 新增或調整 ElastAlert 告警規則，自動驗證 query 和 Kibana Link | "新增告警", "新增 alert", "監控 job 有沒有跑", "設定錯誤通知" |
 
 ---
 
@@ -200,6 +201,35 @@ schedule: "0 9 * * 1"
 - 標準化 Markdown 格式的 Release Note
 - 包含：基本資訊、版本控制、異動項目、開發項目
 - 自動識別的 DB 異動和 API 變更清單
+
+---
+
+### elastalert-manager
+
+**ElastAlert 告警規則管理工具**
+
+#### 主要功能
+- 🔔 **新增告警** - 支援 frequency（錯誤監控）和 flatline（Job 未執行）類型
+- 🔍 **自動查詢慣例** - 從同 team 現有告警提取 Slack webhook、OpsGenie key、命名風格
+- ✅ **Kibana 驗證** - 用 Playwright 驗證 Elasticsearch query 和 Kibana Link 正確性
+- 📝 **設定說明** - 產出後解釋每個設定的原因和效果
+- 🌐 **多環境支援** - PROD / UAT / SIT，自動處理 index 和檔名差異
+
+#### 使用範例
+```
+您: "新增告警監控 job 有沒有跑"
+您: "新增 error alert"
+您: "調整告警的 timeframe"
+您: "修改 alert 條件"
+```
+
+#### 互動流程
+1. 確認告警類型（frequency / flatline）
+2. 收集資訊（Job 名稱、log 特徵、index、排程時間）
+3. 查詢同 team 現有告警慣例
+4. 生成 YAML 檔案
+5. Playwright 驗證 query 和 Kibana link
+6. 輸出設定摘要和觸發條件說明
 
 ---
 

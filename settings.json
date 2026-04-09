@@ -2,7 +2,6 @@
   "permissions": {
     "allow": [
       "Bash(*)",
-
       "mcp__playwright__browser_navigate",
       "mcp__playwright__browser_take_screenshot",
       "mcp__playwright__browser_evaluate"
@@ -13,7 +12,6 @@
       "Read(./secrets/**)",
       "Read(./*.pem)",
       "Read(./*.key)",
-
       "Bash(printenv)",
       "Bash(env)",
       "Bash(set)",
@@ -48,6 +46,10 @@
   "enabledPlugins": {
     "ascii-art-0@chuunibiyou-system": true,
     "code-review@claude-plugins-official": true,
-    "code-simplifier@claude-plugins-official": true
+    "code-simplifier@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "context7@claude-plugins-official": true
   }
 }
