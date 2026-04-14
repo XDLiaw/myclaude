@@ -1,6 +1,6 @@
 ---
 name: release-note-generator
-description: 根據 Git commit 和 rollback commit 自動生成 Release Note 及上板計畫文件。當使用者提供 commit hash 並要求生成 release note、版本說明、上版文件、上板計畫時使用。支援掃描 Git 變更、分析程式碼異動、自動識別 DB 異動和 API 變更，並可直接發布到 Confluence。
+description: 根據 Git commit 和 rollback commit 自動生成 Release Note 及上版計畫文件。當使用者提供 commit hash 並要求生成 release note、版本說明、上版文件、上版計畫時使用。支援掃描 Git 變更、分析程式碼異動、自動識別 DB 異動和 API 變更，並可直接發布到 Confluence。
 allowed-tools:
   - Read
   - Write
@@ -17,23 +17,23 @@ allowed-tools:
 
 # Release Note Generator Skill
 
-自動化根據 Git commit 資訊生成標準化的 Release Note 文件與上板計畫。
+自動化根據 Git commit 資訊生成標準化的 Release Note 文件與上版計畫。
 
 ## 核心功能
 
 1. **Git 變更分析** - 掃描指定 commit 範圍內的所有變更
 2. **自動識別異動類型** - 識別 DB 異動、API 變更、設定變更等
 3. **Release Note 生成** - 依據 Confluence 上的 Release Note 範本生成
-4. **上板計畫生成** - 生成獨立的上板計畫文件（作為 Release Note 子頁面）
+4. **上版計畫生成** - 生成獨立的上版計畫文件（作為 Release Note 子頁面）
 5. **Rollback 資訊整合** - 自動記錄 rollback commit 資訊
-6. **Confluence 發布** - 支援直接發布到 Confluence（Release Note + 上板計畫）
+6. **Confluence 發布** - 支援直接發布到 Confluence（Release Note + 上版計畫）
 
 ## 文件架構
 
 ```
 [IPJ] Release Note (父頁面)
   └── [專案名稱] YYYY/MM/DD Release Note (本次 Release Note)
-        └── [專案名稱] YYYY/MM/DD 上板計畫 (子頁面)
+        └── [專案名稱] YYYY/MM/DD 上版計畫 (子頁面)
 ```
 
 ## 使用時機
@@ -183,9 +183,9 @@ git log {rollback_commit}..{commit} --format="%h - %s"
 
 ### 標準格式
 
-```markdown
-# [專案名稱] vX.X.X Release Note
+注意：body 內容不要包含 H1 標題，因為 Confluence 頁面標題已經是標題了，避免重複。直接從 H2 開始。
 
+```markdown
 ## 基本資訊
 
 | 項目 | 內容 |
@@ -539,18 +539,18 @@ git log {merge_commit}^1..{merge_commit}^2 --oneline
 
 ---
 
-## 上板計畫（Release Plan）範本
+## 上版計畫（Release Plan）範本
 
-上板計畫是 Release Note 的子頁面，用於記錄上版前後的詳細執行計畫。
+上版計畫是 Release Note 的子頁面，用於記錄上版前後的詳細執行計畫。
 
 ### 範本來源
 - [上版計畫（Release Plan）範本](https://jkopay.atlassian.net/wiki/spaces/Engineerin/pages/68845614/Release+Plan)
 
-### 上板計畫標準格式
+### 上版計畫標準格式
+
+注意：同 Release Note，body 內容不要包含 H1 標題，直接從 H2 開始。
 
 ```markdown
-# [專案名稱] YYYY/MM/DD 上板計畫
-
 ## 上版前準備
 
 確認上版前的相關配置(防火牆、設定檔、資料庫資料、權限、Kafka、GW…等)皆已備妥。
@@ -611,7 +611,7 @@ git log {merge_commit}^1..{merge_commit}^2 --oneline
 | 3. {additional_steps} |
 ```
 
-### 上板計畫區塊說明
+### 上版計畫區塊說明
 
 #### 上版前準備
 列出上版前需要確認的所有準備事項：
@@ -697,7 +697,7 @@ git diff {rollback_commit}..{commit} -- "*.yml" "*.yaml" | grep -E "\+.*\$\{.*\}
 ### Step 3: 生成文件
 
 1. **生成 Release Note** - 主文件，包含版本資訊、異動項目、開發項目
-2. **生成上板計畫** - 子文件，包含執行計畫、品質控管、退版計畫
+2. **生成上版計畫** - 子文件，包含執行計畫、品質控管、退版計畫
 
 ### Step 4: 發布到 Confluence（選填）
 
@@ -705,7 +705,7 @@ git diff {rollback_commit}..{commit} -- "*.yml" "*.yaml" | grep -E "\+.*\$\{.*\}
 
 1. 取得 Confluence Cloud ID
 2. 在 [IPJ] Release Note 頁面下建立 Release Note 子頁面
-3. 在 Release Note 頁面下建立上板計畫子頁面
+3. 在 Release Note 頁面下建立上版計畫子頁面
 
 **Confluence 發布資訊：**
 - Space ID: `23003199` (RD3 Space)
@@ -714,13 +714,13 @@ git diff {rollback_commit}..{commit} -- "*.yml" "*.yaml" | grep -E "\+.*\$\{.*\}
 
 ---
 
-## 互動式流程範例（含上板計畫）
+## 互動式流程範例（含上版計畫）
 
 ```
-User: "幫我產生 release note 和上板計畫，commit 是 abc1234，rollback 是 def5678，預計 2025/03/01 上版"
+User: "幫我產生 release note 和上版計畫，commit 是 abc1234，rollback 是 def5678，預計 2025/03/01 上版"
 
 Claude (使用此 Skill):
-好的，我將根據這兩個 commit 生成 Release Note 和上板計畫。
+好的，我將根據這兩個 commit 生成 Release Note 和上版計畫。
 
 📋 開始分析 Git 變更...
 
@@ -742,8 +742,6 @@ Claude (使用此 Skill):
 📄 生成 Release Note...
 
 ---
-
-# [IPJ] 2025/03/01 Release Note
 
 ## 基本資訊
 
@@ -783,11 +781,9 @@ Claude (使用此 Skill):
 
 ---
 
-📄 生成上板計畫...
+📄 生成上版計畫...
 
 ---
-
-# [IPJ] 2025/03/01 上板計畫
 
 ## 上版前準備
 
@@ -837,7 +833,7 @@ N/A
 
 需要我發布到 Confluence 嗎？
 - Release Note 將建立在 [IPJ] Release Note 頁面下
-- 上板計畫將建立在 Release Note 頁面下
+- 上版計畫將建立在 Release Note 頁面下
 ```
 
 ---
@@ -866,14 +862,14 @@ mcp__atlassian__createConfluencePage({
 })
 ```
 
-### 3. 建立上板計畫子頁面
+### 3. 建立上版計畫子頁面
 
 ```javascript
 mcp__atlassian__createConfluencePage({
   cloudId: "f26ec960-9a0e-4396-966b-f9f61581d599",
   spaceId: "23003199",
   parentId: "{release_note_page_id}",  // 剛建立的 Release Note 頁面 ID
-  title: "[IPJ] YYYY/MM/DD 上板計畫",
+  title: "[IPJ] YYYY/MM/DD 上版計畫",
   body: "{release_plan_content}",
   contentFormat: "markdown"
 })

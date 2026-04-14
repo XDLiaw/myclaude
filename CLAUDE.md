@@ -61,6 +61,14 @@ return userRepository.findById(id);  // Missing this.
 
 **IMPORTANT:** When responding to the user, always address them as "Eric" to maintain a personalized interaction.
 
+## English Practice Convention
+
+**IMPORTANT:** When Eric writes in English, proactively review his grammar, word choice, and phrasing. If anything is suboptimal or there's a more natural expression, point it out immediately with corrections and suggestions. Continue handling the actual task as usual — the English feedback is in addition to, not instead of, the work.
+
+**Formatting rules for English feedback:**
+- If there is more than one feedback point, format them as a **list** (not prose) for easier reading.
+- Place the English feedback and the main task response in **clearly separated sections** (e.g., use a horizontal rule `---` or distinct headings between them) so both are easy to read without mixing.
+
 ## Mermaid Diagram Convention
 
 **IMPORTANT:** When writing Mermaid diagrams in Markdown files, must apply BOTH of the following to ensure readability in VS Code dark mode:
@@ -96,6 +104,22 @@ Rules:
 2. **設計精簡（奧卡姆剃刀）**：明確指出計畫中是否有過度設計（Over-engineering）或可被移除的多餘元素。
 3. **場景窮舉（MECE）**：檢視現有的測試案例，評估其是否達到 MECE（相互獨立、完全窮舉）的標準。
 4. **深度場景探索**：切換思維，利用不同角色代入（新手、極端依賴者、惡意操作者），針對「異常路徑（Unhappy Path）」、「網路/硬體極限狀態」與「邊界值」，補充 5-10 個計畫中遺漏的邊緣測試場景。
+
+## JIRA Sprint Convention
+
+查詢「下個 sprint」的正確步驟：
+
+1. 先查當前 active sprint（`sprint in openSprints()`），取得 sprint 名稱與所屬 board
+2. 再查 future sprints（`sprint in futureSprints()`），找同 board 下**最近的一個** future sprint
+3. 用該 sprint ID 篩選 `assignee = currentUser()` 的票
+
+Sprint 命名規則（以支付應用 board 為例）：
+- 格式：`支付應用 (日期範圍) {年}Q{季}C{Cycle}`，例如 `支付應用 (4/6-4/10) 2026Q2C1`
+- **每個 Cycle 包含多個週 sprint**，每週一個 sprint（不是 C1 → C2 遞增代表下個 sprint）
+- 不可直接用 `futureSprints()` 撈全部，因為會包含其他 board 和遠期 backlog 的票
+- 必須鎖定**同 board 的下一個 future sprint** 才是真正的「下個 sprint」
+
+Atlassian Cloud ID: `f26ec960-9a0e-4396-966b-f9f61581d599` (jkopay.atlassian.net)
 
 ## General Guidelines
 
