@@ -1,7 +1,43 @@
 #!/bin/bash
-# Claude Code PreToolUse Hook - 攔截危險 Bash 指令
+# Claude Code PreToolUse Hook - 攔截危險 Bash 指令 & 敏感檔案存取
 # 直接對原始 JSON 做 grep，不依賴 jq
 input=$(cat)
+
+# === 敏感檔案路徑檢查（Read / Edit / Write / Grep / Glob） ===
+# 從 file_path / path / pattern 欄位擷取路徑
+file_path=$(echo "$input" | grep -oP '"file_path"\s*:\s*"[^"]*"' | head -1 | grep -oP ':\s*"\K[^"]*')
+search_path=$(echo "$input" | grep -oP '"path"\s*:\s*"[^"]*"' | head -1 | grep -oP ':\s*"\K[^"]*')
+check_target="${file_path}${search_path}"
+
+if [ -n "$check_target" ]; then
+  sensitive_patterns=(
+    '\.env$'
+    '\.env\.'
+    '/secrets/'
+    '\\secrets\\'
+    '\.pem$'
+    '\.key$'
+    '/\.aws/'
+    '\\\.aws\\'
+    'credentials'
+    'id_rsa'
+    'id_ed25519'
+  )
+  for pattern in "${sensitive_patterns[@]}"; do
+    if echo "$check_target" | grep -qiE "$pattern"; then
+      echo "❌ 已攔截敏感檔案存取" >&2
+      echo "   Path    : $check_target" >&2
+      echo "   Pattern : $pattern" >&2
+      exit 2
+    fi
+  done
+fi
+
+# === 以下為 Bash 指令檢查 ===
+# 如果不是 Bash 工具（沒有 command 欄位），直接放行
+if ! echo "$input" | grep -qP '"command"\s*:'; then
+  exit 0
+fi
 
 dangerous_patterns=(
   # Git - 破壞性操作（git commit/push 已移至 deny list，由原生對話框處理）
