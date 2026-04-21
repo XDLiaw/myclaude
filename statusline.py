@@ -1,22 +1,24 @@
-import sys, json, re, subprocess
+import sys, json, subprocess, io
+from datetime import datetime, timezone, timedelta
 
-raw = sys.stdin.read()
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stdin = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
 
-# Extract values with regex - no full JSON parsing needed
-m = re.search(r'"display_name"\s*:\s*"([^"]*)"', raw)
-model = m.group(1) if m else '?'
+data = json.loads(sys.stdin.read())
 
-m = re.search(r'"cwd"\s*:\s*"(.*?)"', raw)
-cwd_raw = m.group(1) if m else ''
-# Use json.loads to properly unescape JSON string (handles \\ -> \ correctly)
-try:
-    cwd = json.loads('"' + cwd_raw + '"')
-except Exception:
-    cwd = cwd_raw.replace('\\\\', '\\')
+# --- Model ---
+model = data.get('model', {}).get('display_name', '?')
 
-m = re.search(r'"used_percentage"\s*:\s*(\d+)', raw)
-pct = m.group(1) if m else '0'
+# --- Context ---
+pct = data.get('context_window', {}).get('used_percentage') or 0
 
+# --- Session ---
+session_id = data.get('session_id', '')
+session_name = data.get('session_name', '')
+session_str = f'{session_id}({session_name})' if session_name else session_id
+
+# --- CWD & Git Branch ---
+cwd = data.get('cwd', '') or data.get('workspace', {}).get('current_dir', '')
 branch = ''
 if cwd:
     try:
@@ -28,7 +30,26 @@ if cwd:
     except Exception:
         pass
 
+# --- 5h rate limit warning ---
+rl5 = data.get('rate_limits', {}).get('five_hour')
+rl5_pct = rl5.get('used_percentage', 0) if rl5 else 0
+rl5_warn = ''
+if rl5_pct >= 90:
+    rl5_warn = f'  \U0001F6A8 5h {rl5_pct}%'
+elif rl5_pct >= 80:
+    rl5_warn = f'  \u26A0\uFE0F 5h {rl5_pct}%'
+
+# --- Output ---
+# Line 1: model  session  context usage  [5h warning]
+line1 = f'{model}  \U0001F3AF {session_str}  \U0001F4CA {pct}% context{rl5_warn}'
+
+# Line 2: folder icon + cwd, git icon + branch
+line2_parts = []
+if cwd:
+    line2_parts.append(f'\U0001F4C2 {cwd}')
 if branch:
-    print(f'[{model}] {cwd} ({branch}) | {pct}% context')
-else:
-    print(f'[{model}] {cwd} | {pct}% context')
+    line2_parts.append(f'\U0001F500 {branch}')
+line2 = '  '.join(line2_parts)
+
+print(line1)
+print(line2)
