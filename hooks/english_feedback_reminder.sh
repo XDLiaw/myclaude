@@ -24,12 +24,15 @@ Format rules:
 1. Start with heading: ### 📝 English Feedback
 2. Wrap ALL feedback lines in a blockquote (prefix every line with >)
 3. Each point: > - "original" → "corrected" — explanation
-4. End the blockquote, then --- separator, then your main response
-5. Even casual/short messages need review. Do NOT skip this.
+4. After all points, add: > **Full corrected sentence:** "the entire sentence rewritten correctly"
+5. End the blockquote, then --- separator, then your main response
+6. Even casual/short messages need review. Do NOT skip this.
 
 Example:
 ### 📝 English Feedback
 > - "do i miss to commit" → "did I miss committing" — use gerund after "miss", past tense for completed action
+>
+> **Full corrected sentence:** "Did I miss committing?"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

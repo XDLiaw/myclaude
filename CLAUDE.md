@@ -13,7 +13,8 @@ When Eric writes in English, ALWAYS review his grammar, word choice, and phrasin
 1. Start with `### 📝 English Feedback` heading
 2. Wrap all feedback in a **blockquote** (`>` prefix) for visual distinction
 3. Each point: `> - "original" → "corrected" — explanation`
-4. End blockquote, then a blank line, then `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` as separator, then a blank line, then main response
+4. After all points, add: `> **Full corrected sentence:** "the entire sentence rewritten correctly"`
+5. End blockquote, then a blank line, then `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` as separator, then a blank line, then main response
 
 **IMPORTANT:** When executing any shell commands, always display the full command being executed in your response so the user can see and copy it.
 
