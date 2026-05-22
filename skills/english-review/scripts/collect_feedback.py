@@ -21,9 +21,12 @@ from pathlib import Path
 PROJECTS_ROOT = Path.home() / ".claude" / "projects"
 DEFAULT_OUTPUT_DIR = Path.home() / ".claude" / "skills" / "english-review" / "exercises"
 
-FEEDBACK_HEADER_RE = re.compile(r"\*\*English feedback[^*]*\*\*", re.IGNORECASE)
-# Section terminator: horizontal rule or a new bold header that clearly ends the feedback block.
-SECTION_END_RE = re.compile(r"^\s*---\s*$", re.MULTILINE)
+FEEDBACK_HEADER_RE = re.compile(
+    r"(?:#{1,6}[^\n]*?English\s+Feedback|\*\*English feedback[^*]*\*\*)",
+    re.IGNORECASE,
+)
+# Section terminator: horizontal rule (---), heavy unicode line (━━━), or similar separator.
+SECTION_END_RE = re.compile(r"^\s*(?:-{3,}|━{3,}|═{3,})\s*$", re.MULTILINE)
 
 
 @dataclass
