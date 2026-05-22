@@ -8,6 +8,5 @@
 | code-review | claude-plugins-official | `/install code-review@claude-plugins-official` |
 | code-simplifier | claude-plugins-official | `/install code-simplifier@claude-plugins-official` |
 | superpowers | claude-plugins-official | `/install superpowers@claude-plugins-official` |
-| ralph-loop | claude-plugins-official | `/install ralph-loop@claude-plugins-official` |
 | security-guidance | claude-plugins-official | `/install security-guidance@claude-plugins-official` |
 | context7 | claude-plugins-official | `/install context7@claude-plugins-official` |
