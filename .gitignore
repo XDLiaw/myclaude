@@ -24,3 +24,8 @@ backups/
 sessions/
 wip/
 skills/english-review/exercises/
+daemon/
+jobs/
+daemon.*
+daemon-auth-*
+.last-cleanup
