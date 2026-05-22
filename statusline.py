@@ -40,16 +40,20 @@ elif rl5_pct >= 80:
     rl5_warn = f'  \u26A0\uFE0F 5h {rl5_pct}%'
 
 # --- Output ---
-# Line 1: model  session  context usage  [5h warning]
-line1 = f'{model}  \U0001F3AF {session_str}  \U0001F4CA {pct}% context{rl5_warn}'
+# Line 1: model  context usage  [5h warning]
+line1 = f'{model}  \U0001F4CA {pct}% context{rl5_warn}'
 
-# Line 2: folder icon + cwd, git icon + branch
-line2_parts = []
+# Line 2: session
+line2 = f'\U0001F3AF {session_str}'
+
+# Line 3: folder icon + cwd, git icon + branch
+line3_parts = []
 if cwd:
-    line2_parts.append(f'\U0001F4C2 {cwd}')
+    line3_parts.append(f'\U0001F4C2 {cwd}')
 if branch:
-    line2_parts.append(f'\U0001F500 {branch}')
-line2 = '  '.join(line2_parts)
+    line3_parts.append(f'\U0001F500 {branch}')
+line3 = '  '.join(line3_parts)
 
 print(line1)
 print(line2)
+print(line3)
