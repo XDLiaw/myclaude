@@ -47,10 +47,68 @@ allowed-tools:
 | Label | 使用時機 |
 |-------|---------|
 | `argo_workflow` | 票券涉及 Argo Workflow / batch job / 排程任務時額外加上，可與領域 Label 並存 |
+| `release` | 票券為上版票時加上（搭配標題 `[上版]` 與 release note 連結，詳見「上版票特殊處理」） |
 
 **範例**：保險的 argo job 相關票券 → Labels: `module_paymentApp`, `rd3_sprint`, `保險`, `argo_workflow`
 
 根據票券內容自動判斷所屬領域和是否需要技術 Label。如無法判斷，由使用者指定。
+
+## 上版票（Deployment Ticket）特殊處理
+
+上版票的詳細內容已寫在 Release Note（通常是 Confluence 頁面），因此 JIRA 票券**只放 release note 連結**，避免資訊在不同地方重複維護。
+
+### 觸發條件（任一即啟用「上版票模式」）
+
+- 使用者明確說「上版單」「上版票」「deployment ticket」「release ticket」
+- 標題包含 `[上版]` / `[Release]` / `[Deploy]`
+- 對話中已提供 release note 連結（例如 Confluence URL）
+
+若僅靠單一弱訊號（例如只看到 URL 但未說明用途），請先向使用者確認再切換模式。
+
+### 上版票 vs. 一般票 欄位差異
+
+| 欄位 | 一般票 | 上版票 |
+|------|--------|--------|
+| **標題** | `[RD3][<領域>] xxx` | `[RD3][<領域>][上版] xxx`（自動補 `[上版]`） |
+| **Labels** | 預設 + 領域 Label | 預設 + 領域 Label + **`release`** |
+| **描述** | 結構化（背景／影響／觀察／方向） | **只放 release note 連結**，無其他內容 |
+| **Story Points** | 主動評估並建議 | **完全跳過**（不評估、不填欄位） |
+| **Parent / Sprint / Assignee / Priority / Type** | — | 與一般票相同 |
+
+### 上版票描述格式
+
+只放一行 Markdown 連結，例如：
+
+```markdown
+Release Note: https://jkopay.atlassian.net/wiki/spaces/.../pages/...
+```
+
+**取得 release note 連結的方式**：
+1. 若同一對話中已使用 `release-note-generator` skill 產生 Confluence 頁面，直接沿用該 URL
+2. 否則向使用者索取連結
+3. **不要**自行編造或補充其他描述內容
+
+### 上版票確認表格範例
+
+```markdown
+### 開票內容（上版票）
+
+| 欄位 | 值 |
+|------|------|
+| **專案** | JKO |
+| **標題** | [RD3][保險][上版] 26Q2C1 |
+| **類型** | Task |
+| **Sprint** | 26Q2C1 / Backlog |
+| **Labels** | `module_paymentApp`, `rd3_sprint`, `保險`, `release` |
+| **Parent** | JKO-xxxxx（…） |
+| **指派** | 使用者自己 |
+| **Priority** | P2 |
+
+### 描述
+Release Note: https://jkopay.atlassian.net/wiki/...
+
+確認後跟我說開單我就建立。
+```
 
 ## 開票所需欄位
 
@@ -122,6 +180,8 @@ fields: summary, status, labels
 根據票券內容的領域，可以主動建議最可能的選項（例如保險相關的票建議掛在「保險開發 & 優化項目」下），但最終由使用者決定。
 
 ### 步驟 3：評估 Story Points
+
+**若為上版票，跳過此步驟**（不評估、不填 Story Points 欄位）。
 
 在整理欄位前，根據任務內容主動評估 Story Points。
 
@@ -232,4 +292,5 @@ mcp__atlassian__createJiraIssue:
 2. **動態查詢慣例** — Labels 和 Parent 必須從專案歷史票券動態查詢，不同專案有不同慣例
 3. **Sprint 處理** — 使用者說「放 backlog」時不要指定 Sprint；需要指定時查詢 openSprints()
 4. **描述品質** — 如果有上下文資訊（如驗證報告），主動草擬描述內容
-5. **回報結果** — 建立成功後回報 Issue Key
+5. **上版票描述只放連結** — 上版票的描述僅放 release note 連結，避免與 Confluence 頁面內容重複；同時跳過 Story Points 評估、自動補 `[上版]` 標題與 `release` Label
+6. **回報結果** — 建立成功後回報 Issue Key
