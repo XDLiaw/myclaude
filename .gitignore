@@ -16,6 +16,7 @@ usage-data/
 mcp-needs-auth-cache.json
 stats-cache.json
 policy-limits.json
+remote-settings.json
 file-history/
 ide/
 plans/
