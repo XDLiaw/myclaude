@@ -18,6 +18,23 @@ When Eric writes in English, ALWAYS review his grammar, word choice, and phrasin
 
 **IMPORTANT:** When executing any shell commands, always display the full command being executed in your response so the user can see and copy it.
 
+## Infrastructure / Resources
+
+**Kibana (log query)** — username for both environments: `eric.liao`. Passwords are NOT stored here; retrieve from password manager.
+- SIT / UAT: https://log-kibana-gcp.jkopay.app
+- PROD: https://log-kibana-gcp.jkopay.com
+
+Older (deprecated, will be decommissioned — do NOT use):
+- PROD (old): https://kibana.jkopay.com
+- SIT / UAT (old): unknown / not recorded
+
+**Reading logs via MCP (preferred over Playwright/Kibana web)** — global `elasticsearch` MCP servers in `~/.claude.json` (`mcpServers`) query the log clusters directly. Requires Docker running (uses `docker.elastic.co/mcp/elasticsearch`, one-shot `--rm` container per call).
+- `elasticsearch` → SIT **and** UAT (one cluster `sit-operator-elastic`). Holds both K8s `rd3-{sit,uat}-*` data streams (**business logs are here**) and residual Swarm `swarm-{sit,uat}-*` data streams (metrics + RequestLoggingFilter only). Endpoint: `https://log-es-gcp.jkopay.app`. Auth: API key. NOTE: `rd3-*` has no `environment` field (use `kubernetes.*` labels); don't filter on `environment` or you'll silently drop business logs and see only Swarm metrics.
+- `elasticsearch-prod` → PROD. Endpoint: `https://log-es-gcp.jkopay.com`. Auth: basic (username `eric.liao`).
+- Secrets are NOT in config files — injected via env vars `${ES_SIT_API_KEY}` / `${ES_PROD_PASSWORD}` (set as Windows User env vars; changes require a full Claude Code restart).
+- Logs are structured JSON: level field is `level` (not `log.level`); there is no single `message` field. Common fields: `service`, `environment`, `traceId`, `thread`.
+- PROD account role is `editor`: `search` works, but `list_indices` / cluster monitor is denied (403) — query with index wildcards like `.ds-logs-*prod*<service>*` instead.
+
 ## Code Style
 
 **CRITICAL:** 編輯程式碼時，只修改與任務直接相關的行。**絕對不要**變動未涉及邏輯修改的行的縮排、換行、空白、import 排序或格式。目標是讓 `git diff` 保持最小化。
