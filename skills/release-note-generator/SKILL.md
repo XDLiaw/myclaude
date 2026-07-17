@@ -201,5 +201,6 @@ Release Note 建在專案父頁下、上版計畫建在 Release Note 子頁。**
 | 專案 | 服務說明 | 規則文件 |
 |------|----------|----------|
 | jkos-donation | 捐款服務 | `projects/jkos-donation.md` |
+| transporthub | 叫車服務（TT / Taxi） | `projects/transporthub.md` |
 
 > 新增專案時：建立 `projects/{專案}.md`（可參考 `jkos-donation.md` 的欄位結構），並在此表加一列。
