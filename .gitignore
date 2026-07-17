@@ -30,3 +30,4 @@ jobs/
 daemon.*
 daemon-auth-*
 .last-cleanup
+hooks/*.log
