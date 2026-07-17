@@ -144,9 +144,20 @@
     "ascii-art-0@chuunibiyou-system": true,
     "code-review@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "gitkraken-hooks@gitkraken": true,
     "security-guidance@claude-plugins-official": true,
-    "context7@claude-plugins-official": true
+    "superpowers@claude-plugins-official": true
   },
+  "extraKnownMarketplaces": {
+    "gitkraken": {
+      "source": {
+        "source": "directory",
+        "path": "C:\\Users\\eric.liao\\.claude\\plugins\\marketplaces\\gitkraken"
+      }
+    }
+  },
+  "effortLevel": "xhigh",
+  "tui": "fullscreen",
   "skipAutoPermissionPrompt": true
 }
