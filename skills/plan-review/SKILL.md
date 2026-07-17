@@ -1,6 +1,6 @@
 ---
 name: plan-review
-description: 產出開發計畫後自動執行四步驟深度 Review。當完成任何開發計畫、架構設計、或實作方案時使用。涵蓋核心驗證、設計精簡、場景窮舉、邊緣測試探索。
+description: 產出開發計畫後自動執行四步驟深度 Review。當完成任何開發計畫、架構設計、或實作方案時使用。涵蓋核心驗證、設計精簡、場景窮舉、邊緣測試探索。審的是「計畫／設計文件」，不是程式碼 diff（那是 pr-review）也不是 PRD 需求文件（那是 prd-dev-readiness）。可經 review-router 分派，或直接呼叫。
 allowed-tools:
   - Read
   - Grep
