@@ -31,3 +31,4 @@ daemon.*
 daemon-auth-*
 .last-cleanup
 hooks/*.log
+skills/work-summary-report/reports/
