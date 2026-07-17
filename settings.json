@@ -109,6 +109,31 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit*)",
+            "command": "python ~/.claude/hooks/jira-backfill.py commit",
+            "timeout": 20,
+            "statusMessage": "Backfilling commit link to JIRA..."
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*__create_merge_request",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python ~/.claude/hooks/jira-backfill.py mr",
+            "timeout": 20,
+            "statusMessage": "Backfilling MR link to JIRA..."
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
