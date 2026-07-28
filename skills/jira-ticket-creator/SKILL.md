@@ -5,13 +5,14 @@ allowed-tools:
   - Read
   - Glob
   - Grep
-  - mcp__atlassian__createJiraIssue
-  - mcp__atlassian__searchJiraIssuesUsingJql
-  - mcp__atlassian__getJiraIssue
-  - mcp__atlassian__editJiraIssue
-  - mcp__atlassian__lookupJiraAccountId
-  - mcp__atlassian__getVisibleJiraProjects
-  - mcp__atlassian__getJiraProjectIssueTypesMetadata
+  - mcp__claude_ai_Atlassian__createJiraIssue
+  - mcp__claude_ai_Atlassian__searchJiraIssuesUsingJql
+  - mcp__claude_ai_Atlassian__getJiraIssue
+  - mcp__claude_ai_Atlassian__editJiraIssue
+  - mcp__claude_ai_Atlassian__lookupJiraAccountId
+  - mcp__claude_ai_Atlassian__getVisibleJiraProjects
+  - mcp__claude_ai_Atlassian__getJiraProjectIssueTypesMetadata
+  - mcp__claude_ai_Atlassian__addCommentToJiraIssue
 ---
 
 # JIRA Ticket Creator Skill
@@ -112,6 +113,88 @@ Release Note: https://jkopay.atlassian.net/wiki/...
 確認後跟我說開單我就建立。
 ```
 
+## DB 異動單（DB Migration Ticket）特殊處理
+
+DB 異動單的交付物就是「要在資料庫執行的 SQL」——專案沒有 Flyway，SQL 必須由 DBA 或開發者手動對 PROD 執行。正因為 SQL 本身就是這張票的內容，DB 異動單是「描述只寫目標與動機、實作細節不進 description」這條通用規則的**例外**：SQL 一定要寫進 description。
+
+### 觸發條件（任一即啟用「DB 異動單模式」）
+
+- 使用者明確說「開 DB 異動單」「DB migration 單」
+- 標題含 `[DB異動]` / `DB異動` / `DB migration`
+- 任務本質是資料庫異動——**涵蓋兩類，不只 schema**：
+  - **Schema 變動（DDL）**：`ALTER TABLE`、`CREATE INDEX`、新增／修改欄位
+  - **資料變動（DML）**：`UPDATE` / `DELETE` 修資料、backfill 回填、資料導正
+
+### 標題
+
+`[RD3][<領域>][DB異動] <變更摘要>`
+
+- `[DB異動]` 放在領域 bracket 之後，當作第三個 bracket tag
+- 末尾可選擇性標註支援的功能單 `(JKO-xxxxx)`——有就帶、沒有就略
+
+範例：
+- `[RD3][保險][DB異動] order_tab 新增 jkos_account 欄位 (JKO-31315)`
+- `[RD3][保險][DB異動] order_tab 清除 status=7 (EXPIRED) 記錄`（純資料變動）
+
+### 欄位（與一般票的差異）
+
+| 欄位 | DB 異動單 |
+|------|-----------|
+| **類型** | Task |
+| **Labels** | 預設 + 領域 Label（**無**額外 DB label） |
+| **Story Points** | **固定 0.5**（不逐張評估、不套用步驟 3 的換算） |
+| **描述** | 見下方「描述結構」——**SQL 一定要放進 description** |
+| **Parent / Sprint / Assignee / Priority** | 與一般票相同 |
+
+### 描述結構
+
+用 Markdown，依序包含（標「選擇性」者視情況）：
+
+1. **背景／異動說明** — 為什麼要動、支援哪張功能單（附 JKO-xxxxx）
+2. **SQL / DDL** — 實際語句放 `sql` 程式碼區塊；多步驟就編號（例：1. 新增欄位 → 2. 建索引 → 3. 回填）。純資料變動（改資料／backfill）也要把 SQL 完整寫出
+3. **執行順序** — **預設：DDL／SQL 先執行、程式更版後續才上**（沒 Flyway，順序錯會炸）。明確寫「須在程式部署前執行」；若這次剛好相反才特別註明
+4. **環境範圍** — 標明是否**僅 PROD**（常見：SIT/UAT 由開發自行處理，只有 PROD 需要這張單）
+5. **表大小 & 預估耗時**（選擇性）— 動大表／建索引時附 row 數 + DDL 預估時間 + `ALGORITHM=INPLACE, LOCK=NONE`（或評估改走 pt-online-schema-change）
+6. **退版 SQL / 風險與緩解 / 驗收條件**（選擇性）— 較複雜或高風險的異動才寫
+7. **關聯** — 功能票、上版票、Parent Epic、設計文件、上版計畫連結
+
+### DB 異動單確認表格範例
+
+```markdown
+### 開票內容（DB 異動單）
+
+| 欄位 | 值 |
+|------|------|
+| **專案** | JKO |
+| **標題** | [RD3][保險][DB異動] order_tab 新增 xxx 欄位 (JKO-xxxxx) |
+| **類型** | Task |
+| **Sprint** | 26Q2C1 / Backlog |
+| **Labels** | `module_paymentApp`, `rd3_sprint`, `保險` |
+| **Parent** | JKO-xxxxx（…） |
+| **Story Points** | 0.5 |
+| **指派** | 使用者自己 |
+| **Priority** | P2 |
+
+### 描述（草稿）
+（背景 → SQL → 執行順序 → 環境範圍 →〔選擇性：表大小/退版/風險〕→ 關聯，見「描述結構」）
+
+確認後跟我說開單我就建立。
+```
+
+### 自我檢查清單（公司規定，必附）
+
+DB 異動單一律要附「資料庫異動檢查清單」做自我審查（公司規定）。**建單成功後，自動把清單貼成一則 JIRA comment**：能從票內容推導的題目直接代填，不確定的留 `【待填：xxx】`，第 7 項（後續檢查）留空待上線後填。
+
+**執行方式**：需要貼清單時，**務必先讀 `references/db-change-checklist.md`**（逐題代填邏輯、格式規格），依它把 1.x–6.x 答案整理成 answers JSON，跑產生器腳本 `python scripts/build_checklist_adf.py answers.json` 取得 ADF，再用 `mcp__claude_ai_Atlassian__addCommentToJiraIssue`（**`contentFormat: "adf"`**）貼到剛建立的票。使用者已選「直接貼、留【待填】佔位」，所以建單後直接貼、不需再逐題確認；貼完把代填結果與所有 `【待填】` 項目回報給使用者。
+
+**格式**：答案以「箭頭 `→` ＋ 粗體」與問題區隔；已答核心答案**藍色 `#0055CC`**、`【待填】`**紅色 `#AE2E24`**（顏色需 ADF `textColor`，markdown 做不到，故用 ADF 貼）。
+
+**幾個關鍵點**（詳見參考檔）：
+- **代填要依變更類型推理**（加法型 DDL vs 破壞型 DML），備份／Rollback 答案不同，不要寫死。
+- **影響筆數（3.1）** 若描述沒有筆數：comment 留 `【待填：影響筆數】`，並**另在對話中**給一句 `SELECT COUNT(*) ... WHERE <與異動相同條件>` 讓使用者自查——**這句查詢 SQL 不進票、不進 comment**。
+- **執行時間／避開尖峰（3.4）** 不代填、不標紅、直接留空（取決於實際排程，低流量服務未必在意）；3.4 只填「跑多久」。
+- **Review 人員（2.1）** 預設 `@RoyHung`。
+
 ## 開票所需欄位
 
 | # | 欄位 | API 參數 | 必填 | 說明 |
@@ -187,6 +270,8 @@ fields: summary, status, labels
 
 **若為維運票，跳過此步驟**（不評估、不填 Story Points 欄位，一律留白）。維運票的實際耗時由使用者依實際投入事後自行填入，不需事前預估。確認表格中 Story Points 欄位標示為「留白（依實際耗費填入）」。
 
+**若為 DB 異動單，Story Points 固定 0.5**（不套用下方換算、不逐張評估）。詳見「DB 異動單（DB Migration Ticket）特殊處理」。
+
 > **維運票判定**：標題含 `[維運]`，或使用者明確說「維運單／維運票」，或票券本質為用戶客訴／線上問題調查。
 
 在整理欄位前，根據任務內容主動評估 Story Points。
@@ -252,14 +337,14 @@ fields: summary, status, labels
 
 ### 步驟 4：等待確認後建立
 
-使用者明確說「開單」、「建立」、「OK」等確認指令後，才呼叫 `mcp__atlassian__createJiraIssue` 建立票券。
+使用者明確說「開單」、「建立」、「OK」等確認指令後，才呼叫 `mcp__claude_ai_Atlassian__createJiraIssue` 建立票券。
 
 建立成功後，回報 Issue Key。
 
 ## API 呼叫範例
 
 ```
-mcp__atlassian__createJiraIssue:
+mcp__claude_ai_Atlassian__createJiraIssue:
   cloudId: "jkopay.atlassian.net"
   projectKey: "JKO"
   issueTypeName: "Task"
@@ -288,6 +373,8 @@ description 建議結構（兩段即可）：
 - 完整實作細節屬於**對應 MR 的 description**（逐項 commit、類別／方法、測試）。
 - 若需要在**票上**補充實作摘要或貼 MR／commit 連結，一律**用 COMMENT 補充，不要寫進 description**——description 永遠只保留目標與動機。
 
+> **例外：DB 異動單**——SQL／DDL 本身就是交付物（專案無 Flyway，需手動對 PROD 執行），因此 SQL 要直接寫進 description，不適用上面「實作細節不進 description」的規則。詳見「DB 異動單（DB Migration Ticket）特殊處理」。
+
 描述使用 Markdown 格式撰寫。
 
 ## 使用時機
@@ -308,4 +395,5 @@ description 建議結構（兩段即可）：
 4. **描述只寫目標與動機** — description 只放「背景／動機 + 目標」，不寫實作細節；「具體做了什麼」放對應 MR，若要在票上補充則用 COMMENT，不寫進 description（詳見「描述內容撰寫指引」）
 5. **上版票描述只放連結** — 上版票的描述僅放 release note 連結，避免與 Confluence 頁面內容重複；同時跳過 Story Points 評估、自動補 `[上版]` 標題與 `release` Label
 6. **維運票 Story Points 留白** — 維運票（標題含 `[維運]` 或用戶客訴／線上問題調查）不評估、不預填 Story Points，一律留白，由使用者依實際耗費事後填入
-7. **回報結果** — 建立成功後回報 Issue Key
+7. **DB 異動單特殊處理** — 標題用 `[RD3][<領域>][DB異動] ...`（bracket tag，末尾關聯單號有就帶）；SQL／DDL **直接寫進 description**（此類票的例外）；Story Points **固定 0.5**；執行順序預設「DDL 先上、程式後上」；標明環境範圍（是否僅 PROD）；涵蓋 schema（DDL）與資料（DML）兩類異動；**建單後自動貼「資料庫異動檢查清單」comment**（可推導題目代填、其餘留 `【待填】`，影響筆數的查詢 SQL 只給使用者不進票，Review 人員預設 @RoyHung，見 `references/db-change-checklist.md`）。詳見「DB 異動單（DB Migration Ticket）特殊處理」
+8. **回報結果** — 建立成功後回報 Issue Key
