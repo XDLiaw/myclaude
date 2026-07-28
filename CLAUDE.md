@@ -18,6 +18,8 @@ When Eric writes in English, ALWAYS review his grammar, word choice, and phrasin
 
 **IMPORTANT:** When executing any shell commands, always display the full command being executed in your response so the user can see and copy it.
 
+**IMPORTANT — 絕不使用「TL;DR」：** 任何地方都不要出現 "TL;DR"——包含對話回覆，以及**產出的文件／報告（Markdown、HTML 等）**的標題、標籤或行內。若要在前面給快速摘要，改用「**懶人包**」當標題，或直接用一句白話重點帶出。
+
 ## Infrastructure / Resources
 
 **Kibana (log query)** — username for both environments: `eric.liao`. Passwords are NOT stored here; retrieve from password manager.
