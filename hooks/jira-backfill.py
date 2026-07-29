@@ -54,7 +54,11 @@ def find_keys(text):
 
 def git(*args):
     try:
-        return subprocess.check_output(["git", *args], stderr=subprocess.DEVNULL, text=True).strip()
+        # git 輸出為 UTF-8；明確指定 encoding，避免 Windows 預設 cp950 對中文
+        # commit 訊息 decode 失敗（會讓 message 變空、抽不到單號）。
+        return subprocess.check_output(
+            ["git", *args], stderr=subprocess.DEVNULL,
+            encoding="utf-8", errors="replace").strip()
     except Exception:
         return ""
 
@@ -83,6 +87,18 @@ def _first_json_str(blob, field):
         return json.loads('"%s"' % m.group(1))
     except Exception:
         return m.group(1)
+
+
+def _arg_value(cmd, flags):
+    """從 shell 命令列抽出 -t/--title、-s/--source-branch 這類旗標的值。
+    支援 "值"、'值'、=值、或空白分隔的裸值；抓不到回 ""。"""
+    if not cmd:
+        return ""
+    for f in flags:
+        m = re.search(r"(?:^|\s)%s(?:=|\s+)(\"([^\"]*)\"|'([^']*)'|(\S+))" % re.escape(f), cmd)
+        if m:
+            return m.group(2) or m.group(3) or m.group(4) or ""
+    return ""
 
 
 def mr_url_from_branch(branch):
@@ -200,13 +216,20 @@ def link_all(keys, url, label):
 
 
 def handle_commit(data):
-    msg = git("log", "-1", "--pretty=%B")
-    sha = git("rev-parse", "HEAD")
+    ti = data.get("tool_input") or {}
+    cmd = ti.get("command")
+    if cmd is not None and "commit" not in cmd:  # 掛在 matcher=Bash 上，非 commit 指令略過
+        return
+    # 支援 `git -C <path> commit`：後續 git 查詢也要在同一 repo 目錄執行，
+    # 否則 hook 的 cwd 若非該 repo，git log / rev-parse 會讀到錯的 repo（keys/sha 對不上）。
+    gopts = ["-C", _arg_value(cmd, ["-C"])] if cmd and _arg_value(cmd, ["-C"]) else []
+    msg = git(*gopts, "log", "-1", "--pretty=%B")
+    sha = git(*gopts, "rev-parse", "HEAD")
     keys = find_keys(msg)
-    _log("COMMIT keys=%s sha=%s" % (keys, sha[:8] if sha else None))
+    _log("COMMIT keys=%s sha=%s gopts=%s" % (keys, sha[:8] if sha else None, gopts))
     if not keys or not sha:
         return
-    base = remote_to_https(git("remote", "get-url", "origin"))
+    base = remote_to_https(git(*gopts, "remote", "get-url", "origin"))
     url = "%s/-/commit/%s" % (base, sha) if base else sha
     subject = (msg.splitlines() or [""])[0][:120]
     link_all(keys, url, "commit %s — %s" % (sha[:8], subject))
@@ -217,9 +240,19 @@ def handle_mr(data):
     tr = data.get("tool_response")
     tr_str = tr if isinstance(tr, str) else json.dumps(tr, ensure_ascii=False)
 
+    # glab CLI（Bash tool）路徑：tool_input 只有 command，沒有 title/source_branch 欄位。
+    # 自我把關：本 hook 掛在 matcher=Bash 上，非 `mr create` 的指令直接略過。
+    cmd = ti.get("command")
+    cli_title = cli_src = ""
+    if cmd is not None:
+        if "mr create" not in cmd:
+            return
+        cli_title = _arg_value(cmd, ["--title", "-t"])
+        cli_src = _arg_value(cmd, ["--source-branch", "-s"])
+
     # 單號「只」從 title + source_branch 抽（不掃 description / target_branch，避免連坐其他單）
-    title = ti.get("title") or _first_json_str(tr_str, "title")
-    src = ti.get("source_branch") or _first_json_str(tr_str, "source_branch")
+    title = ti.get("title") or cli_title or _first_json_str(tr_str, "title")
+    src = ti.get("source_branch") or cli_src or _first_json_str(tr_str, "source_branch")
     keys = find_keys("%s %s" % (title, src))
     if not keys:  # payload 稀疏時退回當前 git branch（仍不碰 description/target）
         src = src or git("rev-parse", "--abbrev-ref", "HEAD")
@@ -284,6 +317,16 @@ def selftest():
     mr_src = "feature/JKO-31533-mtch-alert"
     assert find_keys("%s %s" % (mr_title, mr_src)) == ["JKO-31533"]
     assert find_keys("feature/JKO-31238-mtch Epic JKO-31238 reuse JKO-31531") == ["JKO-31238", "JKO-31531"]
+    # _arg_value + glab CLI 路徑：從命令列抽 title / source-branch，再抽單號
+    _cli = ('"C:/x/glab.exe" mr create -s feat/JKO-32984-remove-fastjson -b master '
+            '-t "[JKO-32984] chore: 移除未使用的 fastjson 依賴 (RCE 漏洞清理)" -d "x"')
+    assert _arg_value(_cli, ["--title", "-t"]) == "[JKO-32984] chore: 移除未使用的 fastjson 依賴 (RCE 漏洞清理)"
+    assert _arg_value(_cli, ["--source-branch", "-s"]) == "feat/JKO-32984-remove-fastjson"
+    assert find_keys("%s %s" % (_arg_value(_cli, ["--title", "-t"]), _arg_value(_cli, ["--source-branch", "-s"]))) == ["JKO-32984"]
+    assert _arg_value("echo hi", ["-t"]) == ""
+    # -C：支援 `git -C "<path>" commit` 抽出 repo 目錄
+    assert _arg_value('git -C "C:/Workspace/x" commit -m "[JKO-1] y"', ["-C"]) == "C:/Workspace/x"
+    assert _arg_value("git commit -m x", ["-C"]) == ""
     print("SELFTEST OK")
 
 

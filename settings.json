@@ -116,10 +116,17 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Bash(git commit*)",
+            "if": "Bash(git *commit*)",
             "command": "python ~/.claude/hooks/jira-backfill.py commit",
             "timeout": 20,
             "statusMessage": "Backfilling commit link to JIRA..."
+          },
+          {
+            "type": "command",
+            "if": "Bash(*mr create*)",
+            "command": "python ~/.claude/hooks/jira-backfill.py mr",
+            "timeout": 20,
+            "statusMessage": "Backfilling MR link to JIRA..."
           }
         ]
       },
