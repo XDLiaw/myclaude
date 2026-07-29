@@ -81,8 +81,6 @@ allowed-tools:
 | **Story Points** | 主動評估並建議 | **完全跳過**（不評估、不填欄位） |
 | **Parent / Sprint / Assignee / Priority / Type** | — | 與一般票相同 |
 
-> **維運票 Story Points 亦留白**：標題帶「維運」或屬用戶客訴／線上問題調查的票券，Story Points 一律不評估、不預填，由使用者依實際耗費事後填入。詳見步驟 3。
-
 ### 上版票描述格式
 
 只放一行 Markdown 連結，例如：
@@ -270,7 +268,7 @@ DB 異動單一律要附「資料庫異動檢查清單」做自我審查（公�
 ```
 # 查最近的票，取得 labels、parent、summary 慣例
 JQL: project = {projectKey} AND assignee = 611e2372c6021e006954b849 ORDER BY created DESC
-fields: summary, labels, parent, customfield_10016, status
+fields: summary, labels, parent, customfield_10039, status
 
 # 查當前 Sprint
 JQL: project = {projectKey} AND assignee = 611e2372c6021e006954b849 AND sprint in openSprints() ORDER BY created DESC
@@ -377,7 +375,7 @@ fields: summary, status, labels
 有需要調整的地方嗎？確認後跟我說開單我就建立。
 ```
 
-### 步驟 4：等待確認後建立
+### 步驟 5：等待確認後建立
 
 使用者明確說「開單」、「建立」、「OK」等確認指令後，才呼叫 `mcp__claude_ai_Atlassian__createJiraIssue` 建立票券。
 
@@ -398,8 +396,7 @@ mcp__claude_ai_Atlassian__createJiraIssue:
     labels: ["module_paymentApp", "rd3_sprint", "保險"]
     priority:
       name: "P2"
-    customfield_10039: 2  # Story Points（classic 欄位）
-    # ⚠️ 不要用 customfield_10016（那是 "Story point estimate"，next-gen 欄位，JIRA UI 不顯示）
+    customfield_10039: 2  # Story Points（classic 欄位，用 10039 非 10016）
 ```
 
 ## 描述內容撰寫指引
@@ -428,14 +425,3 @@ description 建議結構（兩段即可）：
 - "開 JIRA ticket"
 - "建 Task/Story/Bug"
 - "幫我在 JKO 專案開單"
-
-## 注意事項
-
-1. **先確認再建立** — 絕對不要未經確認就建票
-2. **動態查詢慣例** — Labels 和 Parent 必須從專案歷史票券動態查詢，不同專案有不同慣例
-3. **Sprint 處理** — 使用者說「放 backlog」時不要指定 Sprint；需要指定時查詢 openSprints()
-4. **描述只寫目標與動機** — description 只放「背景／動機 + 目標」，不寫實作細節；「具體做了什麼」放對應 MR，若要在票上補充則用 COMMENT，不寫進 description（詳見「描述內容撰寫指引」）
-5. **上版票描述只放連結** — 上版票的描述僅放 release note 連結，避免與 Confluence 頁面內容重複；同時跳過 Story Points 評估、自動補 `[上版]` 標題與 `release` Label
-6. **維運票特殊處理** — 判定：標題帶「維運」或用戶客訴／線上問題調查。標題把領域與維運**合併** `[RD3][<領域>維運] ...`（非分開 `[<領域>][維運]`）、labels 加 `維運`；Story Points 一律留白（不評估、不預填，由使用者依實際耗費事後填入）。另：**標題只寫問題、不寫解法**（見「標題撰寫原則」）
-7. **DB 異動單特殊處理** — 標題用 `[RD3][<領域>][DB異動] ...`（bracket tag，末尾關聯單號有就帶）；SQL／DDL **直接寫進 description**（此類票的例外）；Story Points **固定 0.5**；執行順序預設「DDL 先上、程式後上」；標明環境範圍（是否僅 PROD）；**description 必附 PROD DB 名稱**（依序：查專案 CLAUDE.md → 解析 `application-prod` datasource URL → 找不到才問使用者；新確定的就回寫專案 CLAUDE.md 避免每次重問，見「確定 DB 名稱」）；涵蓋 schema（DDL）與資料（DML）兩類異動；**建單後自動貼「資料庫異動檢查清單」comment**（可推導題目代填、其餘留 `【待填】`，影響筆數的查詢 SQL 只給使用者不進票，Review 人員預設 @RoyHung，見 `references/db-change-checklist.md`）。詳見「DB 異動單（DB Migration Ticket）特殊處理」
-8. **回報結果** — 建立成功後回報 Issue Key
