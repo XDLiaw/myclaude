@@ -146,17 +146,51 @@ DB 異動單的交付物就是「要在資料庫執行的 SQL」——專案沒�
 | **描述** | 見下方「描述結構」——**SQL 一定要放進 description** |
 | **Parent / Sprint / Assignee / Priority** | 與一般票相同 |
 
+### 確定 DB 名稱（描述必附）
+
+SQL 最終要由 DBA／開發者手動連上某台 MySQL、對某個 database（schema）執行。若票上沒寫清楚是「哪個 DB」，執行者只能回頭問或自己猜——這正是最該由這張票講明白的資訊。所以 description 一定要有一段標明 **PROD DB 名稱**。
+
+> **這段只列 DB 名稱本身**（如 `insurance_pay_db`），不要把來源、`application-prod` 路徑、JDBC URL 或推導過程寫進票——那些屬於暫時性的佐證，留在對話中讓使用者核對即可，別佔票面。
+
+決定 DB 名稱依序走這三步，**找到就停**：
+
+1. **先查專案 CLAUDE.md 有沒有記過**
+   讀專案的 CLAUDE.md（checked-in 的專案指令檔，含被 `@import` 進來的檔案；**不是** `CLAUDE.local.md`、也不是全域 `~/.claude/CLAUDE.md`），找是否已記錄 PROD DB 名稱（關鍵字如「PROD DB」「資料庫名稱」「DB 名稱」）。有就直接用，跳過下面兩步——這就是「記一次、之後不再重找／重問」的用意。
+
+2. **從 `application-prod` 設定檔解析**
+   用 Glob 找專案內 `application-prod.{yml,yaml,properties}`，讀 datasource 的 JDBC URL，從 `jdbc:mysql://<host>:<port>/<db_name>?...` 取出 `?` 前的 `<db_name>`（properties 檔對應 key 通常是 `spring.datasource.url`）。
+   - URL 若用 placeholder（`${db_name}`、`${...}`）取不到字面值 → 當作「找不到」，走第 3 步。
+   - 有**多個 datasource**（多 DB）→ 全部列出，請使用者指認這次異動打哪個 DB。
+   - 若 `application-prod` 只覆寫 host、DB 名寫在 base `application.yml` → 一併看 base 檔。
+
+3. **找不到就問使用者**
+   明確告訴他「在 `application-prod` 找不到字面 DB 名稱（或有多個無法判斷）」，請他提供 PROD DB 名稱。
+
+**取得後：自動回寫專案 CLAUDE.md**（除非第 1 步已從那讀到）
+只要 DB 名稱是這次「新確定」的（第 2 步解析到、或第 3 步使用者提供），就把它寫進專案 CLAUDE.md，讓下次同專案的 DB 異動單直接命中第 1 步。DB schema 名稱只是識別碼、**非機敏**（連線 host／帳密才是機敏，那些不寫），放進 checked-in 的 CLAUDE.md 沒問題。建議格式——在專案 CLAUDE.md 找合適位置補，或新增一個小節：
+
+```markdown
+## 資料庫（DB）
+
+| 環境 | DB 名稱 |
+|------|---------|
+| PROD | <db_name> |
+```
+
+專案若已有相關小節就近補一列即可，不用硬開新段落。回寫後跟使用者講一聲「已把 PROD DB 名稱記到 `<path>`，下次同專案不用再問」。
+
 ### 描述結構
 
 用 Markdown，依序包含（標「選擇性」者視情況）：
 
 1. **背景／異動說明** — 為什麼要動、支援哪張功能單（附 JKO-xxxxx）
-2. **SQL / DDL** — 實際語句放 `sql` 程式碼區塊；多步驟就編號（例：1. 新增欄位 → 2. 建索引 → 3. 回填）。純資料變動（改資料／backfill）也要把 SQL 完整寫出
-3. **執行順序** — **預設：DDL／SQL 先執行、程式更版後續才上**（沒 Flyway，順序錯會炸）。明確寫「須在程式部署前執行」；若這次剛好相反才特別註明
-4. **環境範圍** — 標明是否**僅 PROD**（常見：SIT/UAT 由開發自行處理，只有 PROD 需要這張單）
-5. **表大小 & 預估耗時**（選擇性）— 動大表／建索引時附 row 數 + DDL 預估時間 + `ALGORITHM=INPLACE, LOCK=NONE`（或評估改走 pt-online-schema-change）
-6. **退版 SQL / 風險與緩解 / 驗收條件**（選擇性）— 較複雜或高風險的異動才寫
-7. **關聯** — 功能票、上版票、Parent Epic、設計文件、上版計畫連結
+2. **資料庫（DB 名稱）** — **只列 PROD DB 名稱本身**（如 `insurance_pay_db`），不附來源／推導過程／連線資訊。名稱如何決定見上方「確定 DB 名稱」
+3. **SQL / DDL** — 實際語句放 `sql` 程式碼區塊；多步驟就編號（例：1. 新增欄位 → 2. 建索引 → 3. 回填）。純資料變動（改資料／backfill）也要把 SQL 完整寫出
+4. **執行順序** — **預設：DDL／SQL 先執行、程式更版後續才上**（沒 Flyway，順序錯會炸）。明確寫「須在程式部署前執行」；若這次剛好相反才特別註明
+5. **環境範圍** — 標明是否**僅 PROD**（常見：SIT/UAT 由開發自行處理，只有 PROD 需要這張單）
+6. **表大小 & 預估耗時**（選擇性）— 動大表／建索引時附 row 數 + DDL 預估時間 + `ALGORITHM=INPLACE, LOCK=NONE`（或評估改走 pt-online-schema-change）
+7. **退版 SQL / 風險與緩解 / 驗收條件**（選擇性）— 較複雜或高風險的異動才寫
+8. **關聯** — 功能票、上版票、Parent Epic、設計文件、上版計畫連結
 
 ### DB 異動單確認表格範例
 
@@ -172,11 +206,12 @@ DB 異動單的交付物就是「要在資料庫執行的 SQL」——專案沒�
 | **Labels** | `module_paymentApp`, `rd3_sprint`, `保險` |
 | **Parent** | JKO-xxxxx（…） |
 | **Story Points** | 0.5 |
+| **資料庫（PROD DB）** | insurance_pay_db |
 | **指派** | 使用者自己 |
 | **Priority** | P2 |
 
 ### 描述（草稿）
-（背景 → SQL → 執行順序 → 環境範圍 →〔選擇性：表大小/退版/風險〕→ 關聯，見「描述結構」）
+（背景 → 資料庫 → SQL → 執行順序 → 環境範圍 →〔選擇性：表大小/退版/風險〕→ 關聯，見「描述結構」）
 
 確認後跟我說開單我就建立。
 ```
@@ -395,5 +430,5 @@ description 建議結構（兩段即可）：
 4. **描述只寫目標與動機** — description 只放「背景／動機 + 目標」，不寫實作細節；「具體做了什麼」放對應 MR，若要在票上補充則用 COMMENT，不寫進 description（詳見「描述內容撰寫指引」）
 5. **上版票描述只放連結** — 上版票的描述僅放 release note 連結，避免與 Confluence 頁面內容重複；同時跳過 Story Points 評估、自動補 `[上版]` 標題與 `release` Label
 6. **維運票 Story Points 留白** — 維運票（標題含 `[維運]` 或用戶客訴／線上問題調查）不評估、不預填 Story Points，一律留白，由使用者依實際耗費事後填入
-7. **DB 異動單特殊處理** — 標題用 `[RD3][<領域>][DB異動] ...`（bracket tag，末尾關聯單號有就帶）；SQL／DDL **直接寫進 description**（此類票的例外）；Story Points **固定 0.5**；執行順序預設「DDL 先上、程式後上」；標明環境範圍（是否僅 PROD）；涵蓋 schema（DDL）與資料（DML）兩類異動；**建單後自動貼「資料庫異動檢查清單」comment**（可推導題目代填、其餘留 `【待填】`，影響筆數的查詢 SQL 只給使用者不進票，Review 人員預設 @RoyHung，見 `references/db-change-checklist.md`）。詳見「DB 異動單（DB Migration Ticket）特殊處理」
+7. **DB 異動單特殊處理** — 標題用 `[RD3][<領域>][DB異動] ...`（bracket tag，末尾關聯單號有就帶）；SQL／DDL **直接寫進 description**（此類票的例外）；Story Points **固定 0.5**；執行順序預設「DDL 先上、程式後上」；標明環境範圍（是否僅 PROD）；**description 必附 PROD DB 名稱**（依序：查專案 CLAUDE.md → 解析 `application-prod` datasource URL → 找不到才問使用者；新確定的就回寫專案 CLAUDE.md 避免每次重問，見「確定 DB 名稱」）；涵蓋 schema（DDL）與資料（DML）兩類異動；**建單後自動貼「資料庫異動檢查清單」comment**（可推導題目代填、其餘留 `【待填】`，影響筆數的查詢 SQL 只給使用者不進票，Review 人員預設 @RoyHung，見 `references/db-change-checklist.md`）。詳見「DB 異動單（DB Migration Ticket）特殊處理」
 8. **回報結果** — 建立成功後回報 Issue Key
