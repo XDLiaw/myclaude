@@ -32,3 +32,5 @@ daemon-auth-*
 .last-cleanup
 hooks/*.log
 skills/work-summary-report/reports/
+__pycache__/
+orphan-sweep.log
