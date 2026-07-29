@@ -37,6 +37,14 @@ Older (deprecated, will be decommissioned — do NOT use):
 - Logs are structured JSON: level field is `level` (not `log.level`); there is no single `message` field. Common fields: `service`, `environment`, `traceId`, `thread`.
 - PROD account role is `editor`: `search` works, but `list_indices` / cluster monitor is denied (403) — query with index wildcards like `.ds-logs-*prod*<service>*` instead.
 
+## GitLab 操作（改用 glab CLI，勿用 MCP）
+
+**IMPORTANT:** 已移除 gitlab MCP（過去每個 session 常駐 ~1.5GB node），改用 glab CLI（單一執行檔、用完即退、零常駐）。做 GitLab 相關操作時一律優先用 glab，不要再嘗試 gitlab MCP。
+- 執行檔：`C:\Users\eric.liao\AppData\Local\Programs\glab\glab.exe`（PATH 更新後可直接 `glab`；新 shell 若找不到就用完整路徑）
+- 已認證 3 個 host（token 存於 `%LOCALAPPDATA%\glab-cli\config.yml`，明文，不在 public 的 `~/.claude` repo 內）：`gitlab.jkopay.app`、`gitlab.jkos.app`、`packages.jkos.com`
+- **分工**：GitLab 平台操作（MR、issue、CI、review、diff）用 glab；本機 git（`commit`/`push`/`branch`）仍用一般 `git`。
+- 在 repo 內 glab 會依 remote 自動選 host；跨 repo／非 repo 情境用 `glab api --hostname <host> <endpoint>`（例：`glab api --hostname gitlab.jkopay.app user`）。
+
 ## Code Style
 
 **CRITICAL:** 編輯程式碼時，只修改與任務直接相關的行。**絕對不要**變動未涉及邏輯修改的行的縮排、換行、空白、import 排序或格式。目標是讓 `git diff` 保持最小化。
