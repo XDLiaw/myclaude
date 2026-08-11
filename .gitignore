@@ -34,3 +34,5 @@ hooks/*.log
 skills/work-summary-report/reports/
 __pycache__/
 orphan-sweep.log
+# DB 異動單登錄表：含內網 DB host，不進公開 repo
+skills/jira-ticket-creator/references/*.local.json

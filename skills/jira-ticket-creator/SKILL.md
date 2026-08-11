@@ -41,9 +41,10 @@ allowed-tools:
 
 | 領域 | 額外 Label | 說明 |
 |------|-----------|------|
-| 保險 | `保險` | 保險投保、理賠、繳費相關 |
-| 叫車 | `叫車` | 叫車服務、乘車碼相關 |
+| 保險 | `保險` | 保險投保、理賠、保費相關 |
+| 叫車 | `叫車` | 叫車服務（transporthub）相關 |
 | 捐款 | `捐款` | 捐款功能相關 |
+| 繳費 | `繳費` | 帳單繳費 / EBPP（jkopay-ebpp）相關 |
 
 ### 技術 Labels（可疊加）
 
@@ -316,51 +317,51 @@ DB 異動單的交付物就是「要在資料庫執行的 SQL」——專案沒�
 | **描述** | 見下方「描述結構」——**SQL 一定要放進 description** |
 | **Parent / Sprint / Assignee / Priority** | 與一般票相同 |
 
-### 確定 DB 名稱（描述必附）
+### 確定 DB 連線目標（描述必附）
 
-SQL 最終要由 DBA／開發者手動連上某台 MySQL、對某個 database（schema）執行。若票上沒寫清楚是「哪個 DB」，執行者只能回頭問或自己猜——這正是最該由這張票講明白的資訊。所以 description 一定要有一段標明 **PROD DB 名稱**。
+SQL 最終要由 DBA／開發者手動連上**某台 DB 主機**、對**某個 database** 執行。若票上沒寫清楚「哪台 DB、哪個庫」，執行者只能回頭問或自己猜——這正是最該由這張票講明白的資訊。所以 description 一定要有一段標明 **DB 連線目標：類型 + 主機(host) + DB 名稱**。
 
-> **這段只列 DB 名稱本身**（如 `insurance_pay_db`），不要把來源、`application-prod` 路徑、JDBC URL 或推導過程寫進票——那些屬於暫時性的佐證，留在對話中讓使用者核對即可，別佔票面。
+> **只列這三項的值**（如 `MySQL` / `mysql-004-m-01.jkopay.prod` / `insurance_pay_db`），**一般不列 port**（DBA 清楚）；但若同一 host 靠 port 區分主/備（如繳費 `mysql-001-r-01.jkopay.prod:3306`），就直接標**服務實際連線的 `host:port`**。也不要把來源、`application-prod` 路徑、JDBC URL、帳密或推導過程寫進票——那些屬暫時性佐證，留對話中核對即可。host 是內網 hostname、寫進 JIRA（內部）沒問題；**但帳號密碼永遠不寫**。
 
-決定 DB 名稱依序走這三步，**找到就停**：
+決定連線目標依序走這三步，**找到就停**：
 
-1. **先查專案 CLAUDE.md 有沒有記過**
-   讀專案的 CLAUDE.md（checked-in 的專案指令檔，含被 `@import` 進來的檔案；**不是** `CLAUDE.local.md`、也不是全域 `~/.claude/CLAUDE.md`），找是否已記錄 PROD DB 名稱（關鍵字如「PROD DB」「資料庫名稱」「DB 名稱」）。有就直接用，跳過下面兩步——這就是「記一次、之後不再重找／重問」的用意。
+1. **先查登錄表 `references/project-db-targets.local.json`**（本 skill 的每專案 DB 設定；一次設定、之後直接命中）
+   讀該檔，用票的**領域 label**（保險／叫車／捐款…）或**專案名**當 key 找對應項；命中且 `host` 不是 `待確認` → 直接帶入 `type`／`host`／`db`，跳過下面兩步。
+   > 此檔是 gitignored 的 local 檔（含內網 host，**不進公開 repo**），也因此不會跨機同步——換機需另外備份。
 
-2. **從 `application-prod` 設定檔解析**
-   用 Glob 找專案內 `application-prod.{yml,yaml,properties}`，讀 datasource 的 JDBC URL，從 `jdbc:mysql://<host>:<port>/<db_name>?...` 取出 `?` 前的 `<db_name>`（properties 檔對應 key 通常是 `spring.datasource.url`）。
-   - URL 若用 placeholder（`${db_name}`、`${...}`）取不到字面值 → 當作「找不到」，走第 3 步。
-   - 有**多個 datasource**（多 DB）→ 全部列出，請使用者指認這次異動打哪個 DB。
+2. **未命中 → 從 `application-prod` 設定檔解析**
+   用 Glob 找專案內 `application-prod.{yml,yaml,properties}`，讀 datasource 的 JDBC URL `jdbc:mysql://<host>[:port]/<db_name>?...`，**同時取出 `<host>` 與 `<db_name>`**（properties 檔對應 key 通常是 `spring.datasource.url`；**不要只取 db 名把 host 丟掉**）。
+   - URL 用 placeholder（`${...}`）取不到字面值 → 當作「找不到」，走第 3 步。
+   - **別用 host 名稱硬猜主從**。JKO 命名慣例（暫理解）：`-m-`=主庫、`-s-`=備庫、`-r-`=route 節點（同 host 用 port 分流，如 `mysql-001-r-01:3306`→主庫、`:3307`→備庫）。解析到 **IP**、`-r-` route、多組 host/port、或看不出寫入目標時，跟登錄表／使用者確認**寫入主庫**再帶入（打主庫即可，DDL／DML 會自動同步備庫）。
+   - 有**多個 datasource**（多 DB）→ 全部列出，請使用者指認這次打哪個。
    - 若 `application-prod` 只覆寫 host、DB 名寫在 base `application.yml` → 一併看 base 檔。
 
-3. **找不到就問使用者**
-   明確告訴他「在 `application-prod` 找不到字面 DB 名稱（或有多個無法判斷）」，請他提供 PROD DB 名稱。
+3. **還是沒有 → 問使用者**
+   明講「登錄表沒有、`application-prod` 也取不到（或需確認寫入主庫）」，請他提供 `類型 / host / DB 名稱`。
 
-**取得後：自動回寫專案 CLAUDE.md**（除非第 1 步已從那讀到）
-只要 DB 名稱是這次「新確定」的（第 2 步解析到、或第 3 步使用者提供），就把它寫進專案 CLAUDE.md，讓下次同專案的 DB 異動單直接命中第 1 步。DB schema 名稱只是識別碼、**非機敏**（連線 host／帳密才是機敏，那些不寫），放進 checked-in 的 CLAUDE.md 沒問題。建議格式——在專案 CLAUDE.md 找合適位置補，或新增一個小節：
+**取得後：自動回寫登錄表 `references/project-db-targets.local.json`**（除非第 1 步已命中）
+只要連線目標是這次「新確定／新更正」的（第 2 步解析到、或第 3 步使用者提供），就寫進登錄表——新增該領域／專案的項，或把既有的 `待確認` 補成正解。key 用領域 label 或專案名，值至少含 `type`／`host`／`db`（host 以服務實際連線對象為準，一般免 port）。這就是「第一次遇到新專案就問一次、之後同專案直接命中第 1 步」。回寫後跟使用者說一聲「已記到登錄表，下次同專案不用再問」。
 
-```markdown
-## 資料庫（DB）
-
-| 環境 | DB 名稱 |
-|------|---------|
-| PROD | <db_name> |
-```
-
-專案若已有相關小節就近補一列即可，不用硬開新段落。回寫後跟使用者講一聲「已把 PROD DB 名稱記到 `<path>`，下次同專案不用再問」。
+> 登錄表是 gitignored 的 local 檔，**不要**把真實 host 另外寫進會進版控的檔（專案 CLAUDE.md、本 skill 的 SKILL.md 等公開／共享檔）；那些檔要示範時一律用 `mysql-0xx-...` 佔位。
 
 ### 描述結構
 
 用 Markdown，依序包含（標「選擇性」者視情況）：
 
 1. **背景／異動說明** — 為什麼要動、支援哪張功能單（附 JKO-xxxxx）
-2. **資料庫（DB 名稱）** — **只列 PROD DB 名稱本身**（如 `insurance_pay_db`），不附來源／推導過程／連線資訊。名稱如何決定見上方「確定 DB 名稱」
+2. **資料庫（DB 連線目標）** — 用小表列 **類型／Host／DB 名稱**（一般免 port；同 host 靠 port 分主/備時就帶上，如繳費 `:3306`）；如何決定見上方「確定 DB 連線目標」。範例：
+
+   | 類型 | Host | DB 名稱 |
+   |------|------|---------|
+   | MySQL | mysql-004-m-01.jkopay.prod | insurance_pay_db |
+
 3. **SQL / DDL** — 實際語句放 `sql` 程式碼區塊；多步驟就編號（例：1. 新增欄位 → 2. 建索引 → 3. 回填）。純資料變動（改資料／backfill）也要把 SQL 完整寫出
 4. **執行順序** — **預設：DDL／SQL 先執行、程式更版後續才上**（沒 Flyway，順序錯會炸）。明確寫「須在程式部署前執行」；若這次剛好相反才特別註明
 5. **環境範圍** — 標明是否**僅 PROD**（常見：SIT/UAT 由開發自行處理，只有 PROD 需要這張單）
-6. **表大小 & 預估耗時**（選擇性）— 動大表／建索引時附 row 數 + DDL 預估時間 + `ALGORITHM=INPLACE, LOCK=NONE`（或評估改走 pt-online-schema-change）
-7. **退版 SQL / 風險與緩解 / 驗收條件**（選擇性）— 較複雜或高風險的異動才寫
-8. **關聯** — 功能票、上版票、Parent Epic、設計文件、上版計畫連結
+6. **退版 SQL ＋ 是否備份** — **破壞型 DML（`UPDATE`／`DELETE`／backfill 等會改動既有資料者）必填**：附可還原的退版 SQL，並說明是否需備份／為何不需；**加法型 DDL（純新增欄位／索引）可略**（可 `DROP` 還原、不動既有資料）。全公司實況只有約 4% 的單有寫退版，這段正是最該補的風險缺口
+7. **破壞型 DML 的安全寫法**（破壞型才需）— 每段破壞語句前標 `-- 預期筆數: N`；`DELETE`／大量 `UPDATE` 前，先放一段**同 `WHERE` 條件的 `SELECT`** 供執行者核對筆數再動手
+8. **表大小 & 預估耗時**（選擇性）— 動大表／建索引時附 row 數 + DDL 預估時間 + `ALGORITHM=INPLACE, LOCK=NONE`（或評估改走 pt-online-schema-change）
+9. **關聯** — 功能票、上版票、Parent Epic、設計文件、上版計畫連結
 
 ### DB 異動單確認表格範例
 
@@ -376,12 +377,12 @@ SQL 最終要由 DBA／開發者手動連上某台 MySQL、對某個 database（
 | **Labels** | `module_paymentApp`, `rd3_sprint`, `保險` |
 | **Parent** | JKO-xxxxx（…） |
 | **Story Points** | 0.5 |
-| **資料庫（PROD DB）** | insurance_pay_db |
+| **資料庫（DB 連線目標）** | MySQL｜mysql-004-m-01.jkopay.prod｜insurance_pay_db |
 | **指派** | 使用者自己 |
 | **Priority** | P2 |
 
 ### 描述（草稿）
-（背景 → 資料庫 → SQL → 執行順序 → 環境範圍 →〔選擇性：表大小/退版/風險〕→ 關聯，見「描述結構」）
+（背景 → DB 連線目標 → SQL → 執行順序 → 環境範圍 →〔破壞型必填：退版 SQL＋備份、預期筆數/SELECT 核對〕→〔選擇性：表大小〕→ 關聯，見「描述結構」）
 
 確認後跟我說開單我就建立。
 ```
