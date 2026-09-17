@@ -20,6 +20,19 @@ When Eric writes in English, ALWAYS review his grammar, word choice, and phrasin
 
 **IMPORTANT — 絕不使用「TL;DR」：** 任何地方都不要出現 "TL;DR"——包含對話回覆，以及**產出的文件／報告（Markdown、HTML 等）**的標題、標籤或行內。若要在前面給快速摘要，改用「**懶人包**」當標題，或直接用一句白話重點帶出。
 
+**IMPORTANT — 先自查再問；冗長輸出寫成檔案：**
+1. **可自己查的先查再問**：需要的資訊若能自行取得（現有程式碼、檔案、git 紀錄、Confluence／JIRA、網路搜尋），先查證再動手，**不要停下來問 Eric 能自己找到的東西**。只有「查不到的內部決策／最新規格／他個人偏好」才需要問他。（此為讀取式調查，不違反上面「不主動執行額外動作」——那條指的是 commit／push／test 等有副作用的動作。）
+2. **冗長輸出寫成檔案，console 只留摘要**：當回覆內容很長時，改輸出成檔案——**文件／報告／分析類產出一律用 HTML（依既定 house style，不要用 Markdown 檔）**；純程式碼變更則直接改原始碼讓 Eric 在 IDE 閱讀。console 只給**簡短摘要＋檔案位置**，不要把大量內容洗在對話視窗中。
+
+**IMPORTANT — 貼 HTTP / log 紀錄到外部之前先查機敏資料並遮罩：**
+只要把 HTTP request/response 或 log 內容貼到**會被他人或外部系統看到的地方**——JIRA 票券描述／comment、Slack、Confluence、對話回覆——一律先檢查是否含機敏資料，有就遮罩或整段刪除，不要整段複製貼上未經檢查的原始 dump。純粹寫進**不進 git 的本機報告**（debug 用途、只有自己看）可保留原值。
+
+- **一律遮罩或整段移除**（不確定是否敏感，寧可遮）：
+  - Header：`Authorization` / `Authenticate` / `Cookie` / `Set-Cookie` / 任何 `*Token*`、`*Key*`、`*Secret*` 命名的 header
+  - Body 欄位：`password`、`token`、`secret`、`apiKey` 類欄位（`checksum` 只是防竄改雜湊值，非機敏資料，可保留）
+  - 個資：身分證號、護照號碼、信用卡卡號、完整手機號／市話、完整地址、生日——只保留判斷情境所需的部分位數（例如身分證前 3 碼＋末 2 碼，中間用 `*` 補；系統本身回傳的遮罩格式如 `S22*****53` 可直接沿用，不用還原）
+- **可保留**（非機敏、且是判斷根因所需）：URL path、業務欄位（單號、金額、狀態碼、時間戳）、traceId／correlationId、錯誤代碼/訊息、帳號識別碼（街口帳號、jkosId 等，視情境需要保留，但不可連同該帳號的身分證號／密碼一起完整曝光）
+
 ## Infrastructure / Resources
 
 **Kibana (log query)** — username for both environments: `eric.liao`. Passwords are NOT stored here; retrieve from password manager.
@@ -112,9 +125,5 @@ void testQueryOrderTimeoutReturnsCompanyMaintenanceCode() {
 **IMPORTANT:** Do NOT automatically run `git commit` unless the user explicitly requests it.
 
 **IMPORTANT:** Always run git operations as **standalone commands**. Never chain git commands with `cd` or other commands using `&&`. Always `cd` first, then run the git command separately.
-
-When creating git commits, DO NOT include:
-- ❌ "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
-- ❌ "Co-Authored-By: Claude <noreply@anthropic.com>"
 
 Before creating a commit, always ask the user if there is a corresponding JIRA ticket. If there is, include the ticket number as a prefix, e.g. `[JKO-XXXXX] feat: ...`.
