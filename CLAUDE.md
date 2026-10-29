@@ -8,6 +8,15 @@ This file provides global guidance to Claude Code across all projects.
 
 **IMPORTANT:** When responding to the user, always address them as "Eric" to maintain a personalized interaction.
 
+**IMPORTANT — 精簡輸出（Eric 要求）：** AI 產出常常太長、不夠精煉，浪費閱讀精力。所有回覆與產出文件一律短、準、條列：
+- **預設條列式**，避免多行描述段落。先給結論，再給必要細節。
+- 一句一個概念。句子盡量不超過 25 字。
+- 用主動語態、祈使句：寫「先執行 X」，不要寫「X 應該要被執行」。
+- 同一件事全文用同一個詞，不要換詞。
+- 刪掉鋪陳、客套、重複總結。
+- 不要用隱喻、俚語、模糊修飾語（「基本上」、「相當地」）。
+- 寧可少講：不清楚的地方 Eric 會自己追問。
+
 **IMPORTANT — English Feedback (every message Eric writes in English):**
 When Eric writes in English, ALWAYS review his grammar, word choice, and phrasing — even in casual/short messages. This is non-optional. Format:
 1. Start with `### 📝 English Feedback` heading
@@ -110,13 +119,19 @@ void testQueryOrderTimeoutReturnsCompanyMaintenanceCode() {
 }
 ```
 
+**IMPORTANT — 純 rename 不必重跑完整測試：** 若改動純粹是重新命名（class/method/變數改名、搬移但邏輯不變），只要確保**編譯成功**即可，不需要為此額外重跑完整測試套件（省時間）。只有動到邏輯的改動才需要重跑測試。
+
 ## Branch / Worktree Workflow（開發前必做）
 
 **CRITICAL — 進行任何開發（寫 code、改檔案）前，一律先確認 branch 狀態，不要直接在 `master`/`main` 上動手：**
 
 1. **開發前先開專屬 branch**：動任何 code 之前，先檢查目前所在 branch。若還在 `master`/`main`，或沒有針對本次任務的專屬 branch，**先開一個針對性的新 branch** 再開始開發。branch 名稱要能反映任務主題。
 
-2. **已在 feature branch 開發中／有未 commit 內容 → 考慮開 worktree**：若當前已處於某個 feature branch 且正在開發中，或工作區有尚未 commit 的變更，**不要**直接在原地切 branch（會污染或中斷現有工作）。改用 `git worktree` 開一個隔離工作區，且**一樣要在該 worktree 開新 branch**，於隔離環境進行新任務。（可搭配 `superpowers:using-git-worktrees` skill）
+2. **已在 feature branch 開發中／有未 commit 內容 → 考慮開 worktree**：若當前已處於某個 feature branch 且正在開發中，或工作區有尚未 commit 的變更，**不要**直接在原地切 branch（會污染或中斷現有工作）。改用 `git worktree` 開一個隔離工作區，且**一樣要在該 worktree 開新 branch**，於隔離環境進行新任務。
+
+   - **固定放在 repo 的同層目錄**（repo 外、不要放 repo 內的 `.worktrees/`、`.claude/worktrees/` 等路徑——這些會造成每次位置不一致）：`<repo 所在目錄>/<worktree 名稱>`。
+   - **命名規則依情境彈性決定**（例如 `<repo-name>-<JIRA單號>`、或遇中文路徑會導致工具問題時改全英文同層目錄如 `ebpp-worktrees/<topic>`），不強制單一格式，但同一個 repo 內**沿用該 repo 先前用過的慣例**（可用 `git worktree list` 確認既有 worktree 路徑模式）。
+   - 不要再使用 `superpowers:using-git-worktrees` skill 的「智慧選目錄」邏輯（會導致 repo 內 `.worktrees/`／`.claude/worktrees/`／同層目錄三種並存、不一致）——直接依上述規則在同層目錄建立即可。
 
 3. 不確定該開一般 branch 還是 worktree、或未 commit 的變更是否會被影響時，**先問 Eric 再動手**。
 
