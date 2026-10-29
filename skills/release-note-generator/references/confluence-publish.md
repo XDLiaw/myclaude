@@ -78,4 +78,4 @@ Release Note 與上版計畫中**所有 JIRA 單號**（上版單、DB 異動票
 - [RD3 - 上版計劃 Checklist](https://jkopay.atlassian.net/wiki/spaces/RD3/pages/976093224/RD3+-+Checklist) - 檢查清單
 
 ### RD3 Release Note 格式
-參考 [NC] Release Note 系列文件的標準格式：預計上版日期、上版單（JIRA 連結）、Git（commit only）、Rollback Git（commit only）、DB 異動、UAPI 新增 routing、Vault 異動（檢查 `${XXXX}` 格式變數）、其他。
+參考 [NC] Release Note 系列文件的標準格式：預計上版日期、上版單（JIRA 連結）、Git（commit only）、Rollback Git（commit only）、MR（本次上版涵蓋的 MR 連結，盡量都要記錄）、DB 異動、Vault 異動（檢查 `${XXXX}` 格式變數）、設定檔變更、其他。

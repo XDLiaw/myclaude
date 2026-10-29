@@ -1,6 +1,8 @@
 # Git 變更分析
 
-對應主流程 **④ Git 變更分析**。掃描 `{rollback_commit}..{commit}` 範圍，識別 DB / UAPI / Vault / 設定檔等異動類型，並整理開發項目。
+對應主流程 **④ Git 變更分析**。掃描 `{rollback_commit}..{commit}` 範圍，識別 DB / Vault / 設定檔等異動類型，並整理開發項目。
+
+> Release Note **不再有「UAPI 新增 routing」區塊**（已移除）。API endpoint 的新增／移除直接寫在「開發項目」描述即可，不另闢區塊。
 
 ## 目錄
 - [Step 1: 獲取 Commit 資訊](#step-1-獲取-commit-資訊)
@@ -61,23 +63,6 @@ git diff {rollback_commit}..{commit} | grep -E "(CREATE|ALTER|DROP|ADD|MODIFY)\s
 
 > 偵測到 DB 異動時，依主流程 **⑤** 另建 DB 異動 JIRA 票（production DDL）。
 
-### API 變更（UAPI routing）
-檢查以下內容的變更：
-- Controller 類別中的 `@RequestMapping`, `@GetMapping`, `@PostMapping` 等
-- API 路由配置檔案
-- OpenAPI/Swagger 定義
-
-**分析內容**：
-```bash
-# 檢查 Controller 變更
-git diff {rollback_commit}..{commit} -- "*Controller.java"
-
-# 搜尋新增的 API endpoint
-git diff {rollback_commit}..{commit} | grep -E "@(Get|Post|Put|Delete|Patch|Request)Mapping"
-```
-
-> 只列**新增**的 routing；既有 endpoint 僅增加欄位不算新 routing。被移除的 route 可記在開發項目/其他備註。
-
 ### Vault 異動
 檢查以下內容的變更：
 - `application*.yml` 中的 vault 相關配置
@@ -104,7 +89,7 @@ git diff {rollback_commit}..{commit} -- "*.yml" "*.yaml" | grep -E "\+.*\$\{.*\}
 
 ## Step 4: 分析開發項目
 
-根據 commit message 和變更內容，整理開發項目清單：
+根據 commit message 和變更內容，整理開發項目清單（API endpoint 的新增／移除也寫在這裡）：
 
 ```bash
 # 獲取 commit 範圍內的所有 commit messages
@@ -141,25 +126,7 @@ def detect_db_changes(diff_files):
     return db_changes if db_changes else ["無"]
 ```
 
-### 2. API 變更檢測
-
-```python
-# 偽代碼
-def detect_api_changes(diff_files):
-    api_changes = []
-
-    # 檢查 Controller 檔案
-    controller_files = [f for f in diff_files if 'Controller' in f]
-    for ctrl_file in controller_files:
-        diff_content = get_file_diff(ctrl_file)
-        # 解析新增的 @XXXMapping 註解
-        mappings = extract_request_mappings(diff_content)
-        api_changes.extend(mappings)
-
-    return api_changes if api_changes else ["無"]
-```
-
-### 3. 開發項目整理
+### 2. 開發項目整理
 
 ```python
 # 偽代碼

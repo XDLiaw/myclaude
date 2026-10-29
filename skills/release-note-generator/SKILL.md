@@ -1,6 +1,6 @@
 ---
 name: release-note-generator
-description: 根據 Git commit 和 rollback commit 自動生成 Release Note 及上版計畫文件。當使用者提供 commit hash 並要求生成 release note、版本說明、上版文件、上版計畫時使用。支援掃描 Git 變更、分析程式碼異動、自動識別 DB 異動和 API 變更，並可直接發布到 Confluence。
+description: 根據 Git commit 和 rollback commit 自動生成 Release Note 及上版計畫文件。當使用者提供 commit hash 並要求生成 release note、版本說明、上版文件、上版計畫時使用。支援掃描 Git 變更、分析程式碼異動、自動識別 DB 異動和 Vault 異動，並可直接發布到 Confluence。
 allowed-tools:
   - Read
   - Write
@@ -25,7 +25,7 @@ allowed-tools:
 ① 讀取專案規則         → 讀 projects/{專案}.md（標題格式、版本號、Confluence 父頁 ID、設定檔列入規則）；無則詢問是否建立
 ② 收集 / 推導輸入       → commit（必填）；rollback 自動推導(③)；jira_ticket 未給則自動建(⑤)；選填 release_date/prd/design
 ③ 自動查 rollback commit → Confluence 最新一篇 release note 的 Git commit；git rev-parse 還原完整 SHA
-④ Git 變更分析          → commit 範圍 + 變更檔；識別 DB / UAPI / Vault / 設定檔(僅 production)
+④ Git 變更分析          → commit 範圍 + 變更檔；識別 DB / Vault / 設定檔(僅 production)
 ⑤ 自動建立 JIRA 單      → 無上版單→建上版票；偵測到 DB 異動→另建 DB 異動票（皆走 jira-ticket-creator，確認後才建）
 ⑥ 判斷是否產生上版計畫   → 以「變更性質」為主；單純只產 Release Note，需協調(DB/Vault/多服務/高風險)才產上版計畫
 ⑦ 生成文件             → Release Note（+上版計畫視⑥）；body 從 H2 開始
@@ -46,7 +46,7 @@ allowed-tools:
 ## 核心功能
 
 1. **Git 變更分析** - 掃描指定 commit 範圍內的所有變更
-2. **自動識別異動類型** - 識別 DB 異動、API 變更、設定變更等
+2. **自動識別異動類型** - 識別 DB 異動、Vault 異動、設定變更等
 3. **Release Note 生成** - 依據 Confluence 上的 Release Note 範本生成
 4. **上版計畫生成（視情況）** - 生成獨立的上版計畫文件（作為 Release Note 子頁面）。**上版範圍單純或變更很少時可省略**，詳見「[是否產生上版計畫](#是否產生上版計畫)」。
 5. **Rollback 資訊整合** - 自動查詢上一版 release note 取得 rollback commit
@@ -106,7 +106,7 @@ allowed-tools:
 
 ### ④ Git 變更分析
 
-掃描 `{rollback_commit}..{commit}`，識別 DB / UAPI / Vault / 設定檔(僅 production) 異動並整理開發項目。
+掃描 `{rollback_commit}..{commit}`，識別 DB / Vault / 設定檔(僅 production) 異動並整理開發項目。
 **完整 bash 指令、偵測邏輯與特殊情況（多 commit 範圍 / merge commit / 找不到 commit）見 `references/git-analysis.md`。**
 
 ### ⑤ 自動建立 JIRA 單（上版單 / DB 異動票）

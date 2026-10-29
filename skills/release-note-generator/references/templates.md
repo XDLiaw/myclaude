@@ -32,14 +32,12 @@
 |------|--------|
 | Git | {commit_hash} |
 | Rollback Git | {rollback_commit} |
+| MR | {merge_requests} |
 
 ## 異動項目
 
 ### DB 異動
 {db_changes}
-
-### UAPI 新增 routing
-{api_changes}
 
 ### Vault 異動
 {vault_changes}
@@ -57,7 +55,8 @@
 ```
 
 **注意**：
-- 版本控制只需 commit hash，不需 branch 名稱；commit / rollback 皆用**完整 40 碼 SHA**。
+- 版本控制的 commit 欄位只需 commit hash，不需 branch 名稱；commit / rollback 皆用**完整 40 碼 SHA**。
+- **MR 欄位盡量都要記錄**：列出本次上版涵蓋的 MR（可多筆），格式 `[<repo>!<number>](<MR URL>)`，後面可用括號補來源 → 目標 branch。確實查無對應 MR（例如直接推 master）才填 `無`。
 - 「上版單」與所有 JIRA 單號用 inline smartlink，發布細節見 `references/confluence-publish.md`。
 
 ## Release Note 各區塊說明
@@ -68,13 +67,6 @@
 - [ ] 新增 table: `table_name`
 - [ ] 修改 column: `table_name.column_name`
 - [ ] 新增 index: `index_name` on `table_name`
-```
-
-### UAPI 新增 routing
-如果沒有新增 API，填寫 `無`。如果有新增，列出：
-```markdown
-- [ ] `POST /api/v1/xxx/yyy`
-- [ ] `GET /api/v1/xxx/{id}`
 ```
 
 ### Vault 異動

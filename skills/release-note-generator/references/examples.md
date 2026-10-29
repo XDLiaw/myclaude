@@ -31,7 +31,6 @@ Claude (使用此 Skill):
 
 ✅ 識別異動類型
    - DB 異動: 發現 2 個 SQL migration
-   - API 變更: 發現 3 個新增 endpoint
    - Vault 異動: 無
    - 設定變更: 發現 1 個設定檔變更
 
@@ -54,17 +53,13 @@ Claude (使用此 Skill):
 |------|--------|
 | Git | abc1234 |
 | Rollback Git | def5678 |
+| MR | [jkopay-insurance!123](https://gitlab.jkopay.app/rd3/jkopay-insurance/-/merge_requests/123)（`feature/refund` → `master`） |
 
 ## 異動項目
 
 ### DB 異動
 - [ ] 新增 table: `insurance_order_refund`
 - [ ] 新增 column: `insurance_order.refund_status`
-
-### UAPI 新增 routing
-- [ ] `POST /api/v1/insurance/refund`
-- [ ] `GET /api/v1/insurance/refund/{refundId}`
-- [ ] `POST /api/v1/insurance/refund/{refundId}/cancel`
 
 ### Vault 異動
 無
@@ -117,7 +112,6 @@ Claude (使用此 Skill):
 
 ✅ 識別異動類型
    - DB 異動: 2 個 SQL migration
-   - API 變更: 3 個新增 endpoint
    - Vault 異動: 1 個新增變數
    - 設定變更: 1 個設定檔變更
 
@@ -140,14 +134,12 @@ Claude (使用此 Skill):
 |------|--------|
 | Git | abc1234 |
 | Rollback Git | def5678 |
+| MR | [jkopay-insurance!123](https://gitlab.jkopay.app/rd3/jkopay-insurance/-/merge_requests/123)（`feature/refund` → `master`） |
 
 ## 異動項目
 
 ### DB 異動
 - [ ] 新增 table: `insurance_order_refund`
-
-### UAPI 新增 routing
-- [ ] `POST /ins/refund`
 
 ### Vault 異動
 - `refund_api_key`
