@@ -10,4 +10,4 @@
 | context7 | claude-plugins-official | `/install context7@claude-plugins-official` |
 | gitkraken-hooks | gitkraken | `/install gitkraken-hooks@gitkraken` |
 | security-guidance | claude-plugins-official | `/install security-guidance@claude-plugins-official` |
-| superpowers | claude-plugins-official | `/install superpowers@claude-plugins-official` |
+| postman | claude-plugins-official | `/install postman@claude-plugins-official` |

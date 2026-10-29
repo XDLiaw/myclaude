@@ -41,6 +41,15 @@
             "timeout": 3
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -97,6 +106,16 @@
             "command": "bash ~/.claude/hooks/check_dangerous.sh"
           }
         ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "ConfigChange": [
@@ -116,15 +135,15 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Bash(git *commit*)",
             "command": "python ~/.claude/hooks/jira-backfill.py commit",
+            "if": "Bash(git *commit*)",
             "timeout": 20,
             "statusMessage": "Backfilling commit link to JIRA..."
           },
           {
             "type": "command",
-            "if": "Bash(*mr create*)",
             "command": "python ~/.claude/hooks/jira-backfill.py mr",
+            "if": "Bash(*mr create*)",
             "timeout": 20,
             "statusMessage": "Backfilling MR link to JIRA..."
           }
@@ -138,6 +157,128 @@
             "command": "python ~/.claude/hooks/jira-backfill.py mr",
             "timeout": 20,
             "statusMessage": "Backfilling MR link to JIRA..."
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "timeout": 10
           }
         ]
       }
@@ -154,7 +295,8 @@
     "context7@claude-plugins-official": true,
     "gitkraken-hooks@gitkraken": true,
     "security-guidance@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true
+    "superpowers@claude-plugins-official": false,
+    "postman@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "gitkraken": {
@@ -164,7 +306,9 @@
       }
     }
   },
-  "effortLevel": "xhigh",
+  "effortLevel": "medium",
   "tui": "fullscreen",
+  "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
   "skipAutoPermissionPrompt": true
 }
