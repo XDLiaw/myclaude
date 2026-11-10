@@ -17,18 +17,24 @@ session_id = data.get('session_id', '')
 session_name = data.get('session_name', '')
 session_str = f'{session_id}({session_name})' if session_name else session_id
 
-# --- CWD & Git Branch ---
+# --- CWD ---
 cwd = data.get('cwd', '') or data.get('workspace', {}).get('current_dir', '')
-branch = ''
-if cwd:
+
+
+def git(*args):
     try:
-        r = subprocess.run(['git', '-C', cwd, 'branch', '--show-current'],
+        r = subprocess.run(['git', '-C', cwd] + list(args),
                            capture_output=True, text=True, encoding='utf-8',
                            errors='replace', timeout=3)
         if r.returncode == 0:
-            branch = r.stdout.strip()
+            return r.stdout.strip()
     except Exception:
         pass
+    return ''
+
+
+# --- Git Branch ---
+branch = git('branch', '--show-current') if cwd else ''
 
 # --- 5h rate limit warning ---
 rl5 = data.get('rate_limits', {}).get('five_hour')
