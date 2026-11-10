@@ -91,6 +91,37 @@ Older (deprecated, will be decommissioned — do NOT use):
 - `C:\Workspace\叫車\transporthub\documents\reports\20260706_JKO-31965_taxi-gps-zero\01_叫車GPS座標異常_調查報告.html`
 - `C:\Workspace\繳費\jkopay-ebpp\docs\plan\tch-medical-efcs\07-database.html`
 
+## Design Review 文件（產 Confluence design 文件時一律照此規格）
+
+**IMPORTANT：**產出 Design Review 文件時，一律照公司正式範本
+[設計審查範本(Design Review Template)](https://jkopay.atlassian.net/wiki/spaces/Engineerin/pages/44335508/Design+Review+Template)（Engineering space, pageId `44335508`），**不要自己歸納既有文件的骨架、也不要自創章節**。
+
+**文件命名**：`[{service name}]{requirement} ({需求名稱}) Design Review`
+例：`[jkopay-app-svc] Referral Code (好友推薦碼) Design Review`
+
+**章節骨架（固定，不可增刪層級）**：
+
+```
+1. 摘要（Abstract）
+   1.1 需求背景 (PRD)        ← 附 PRD／JIRA 連結，簡述背景與技術 context
+   1.2 名詞定義與統一命名      ← 條列術語，釐清同義詞一律用哪個稱呼
+2. 系統架構
+   2.1 資訊流中的物件         ← 依流程分 2.1.1 / 2.1.2…，各放流程圖；需含錯誤處理
+   2.2 系統架構全圖
+3. 實作細節
+   3.1 溝通介面              ← 3.1.1 行動端 API / 3.1.2 網頁端 API / 3.1.3 Kafka…
+   3.2 資料表及欄位的設計
+       3.2.1 實體關係圖
+       3.2.2 資料表架構       ← 每張表一個子節
+4. 專案管理                  ← 表格：Team | Task | Assignee | Estimated time | Start Date
+```
+
+**填寫原則**：
+- 範本要求、但本次需求沒有的章節，**保留標題並填「無」或「不適用」並簡述原因**，不要刪章節、也不要編造內容。
+- 流程圖用 mermaid，**先用 `confluence-mermaid` skill 轉成 Confluence 格式**再放進頁面，不要貼原始碼。
+- 建立／更新頁面時 `contentFormat` 用 **`html`**（markdown 會略過 macro）；寫完讀回確認圖表與 macro 正常。
+- 放哪個 space／parent 依該產品線既有慣例（例如捐款掛在 RD3 的 `[NC] Design Review` 底下）。
+
 ## Testing Conventions
 
 **IMPORTANT — 每個測試方法都必須具備以下兩項：**
