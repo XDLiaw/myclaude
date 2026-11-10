@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
             "timeout": 10
           }
         ]
@@ -112,7 +112,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
             "timeout": 10
           }
         ]
@@ -165,7 +165,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
             "timeout": 10
           }
         ]
@@ -176,7 +176,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
             "timeout": 10
           }
         ]
@@ -187,7 +187,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
             "timeout": 10
           }
         ]
@@ -198,7 +198,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
             "timeout": 10
           }
         ]
@@ -209,7 +209,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
             "timeout": 10
           }
         ]
@@ -220,7 +220,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
             "timeout": 10
           }
         ]
@@ -231,7 +231,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
             "timeout": 10
           }
         ]
@@ -243,7 +243,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
             "timeout": 10
           }
         ]
@@ -255,7 +255,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
             "timeout": 10
           }
         ]
@@ -266,7 +266,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
             "timeout": 10
           }
         ]
@@ -277,7 +277,42 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/eric.liao/.orca/agent-hooks/claude-hook.cmd",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Elicitation": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "ElicitationResult": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolBatch": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/eric.liao/.orca/agent-hooks/orca-agent-hook.exe claude",
             "timeout": 10
           }
         ]
