@@ -1,4 +1,4 @@
-import sys, json, subprocess, io
+import sys, json, subprocess, io, os
 from datetime import datetime, timezone, timedelta
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -36,6 +36,24 @@ def git(*args):
 # --- Git Branch ---
 branch = git('branch', '--show-current') if cwd else ''
 
+# --- Worktree ---
+# 身處 linked worktree 時標出 worktree 名稱；身處主 repo 時標出其他 worktree 數量，
+# 提醒開發中的 branch 可能不在這個目錄。
+worktree = ''
+if branch:
+    paths = git('rev-parse', '--absolute-git-dir', '--git-common-dir', '--show-toplevel').splitlines()
+    if len(paths) == 3:
+        git_dir = os.path.realpath(paths[0])
+        common_dir = os.path.realpath(os.path.join(cwd, paths[1]))
+        toplevel = paths[2]
+        if git_dir != common_dir:
+            worktree = f'\U0001F33F {os.path.basename(toplevel.rstrip("/"))}'
+        else:
+            others = sum(1 for ln in git('worktree', 'list', '--porcelain').splitlines()
+                         if ln.startswith('worktree ')) - 1
+            if others > 0:
+                worktree = f'\U0001F33F {others} worktree{"s" if others > 1 else ""}'
+
 # --- 5h rate limit warning ---
 rl5 = data.get('rate_limits', {}).get('five_hour')
 rl5_pct = rl5.get('used_percentage', 0) if rl5 else 0
@@ -52,12 +70,14 @@ line1 = f'{model}  \U0001F4CA {pct}% context{rl5_warn}'
 # Line 2: session
 line2 = f'\U0001F3AF {session_str}'
 
-# Line 3: folder icon + cwd, git icon + branch
+# Line 3: folder icon + cwd, git icon + branch, worktree
 line3_parts = []
 if cwd:
     line3_parts.append(f'\U0001F4C2 {cwd}')
 if branch:
     line3_parts.append(f'\U0001F500 {branch}')
+if worktree:
+    line3_parts.append(worktree)
 line3 = '  '.join(line3_parts)
 
 print(line1)
