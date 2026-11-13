@@ -124,6 +124,29 @@ Older (deprecated, will be decommissioned — do NOT use):
 - `C:\Workspace\叫車\transporthub\documents\reports\20260706_JKO-31965_taxi-gps-zero\01_叫車GPS座標異常_調查報告.html`
 - `C:\Workspace\繳費\jkopay-ebpp\docs\plan\tch-medical-efcs\07-database.html`
 
+## 表格使用規則（文件、報告、JIRA 單一律適用）
+
+**IMPORTANT：**表格是「對照矩陣」，不是「文件容器」。常見問題是某欄內容過長、擠成一團換行，整張表不可讀。產任何含表格的產出前先套下列規則：
+
+- **只放可掃視的短值**：狀態、數字、代號、是/否、單號、`檔案:行號`、連結。
+- **單格上限約 1 行（中文 ~25 字）**。超過就代表這格不該放在表格裡。
+- **欄數上限 5**。優先砍掉「說明」「備註」「影響」這類天生會變長的欄。
+- **一格超過 2 個要點 → 改 bullet**，不要用頓號／逗號串成一團。
+
+**長內容往哪搬（不要塞回表格）**：
+- 表格只留「編號 ＋ 一句話結論」，細節改成表格下方分節（`### A-1 xxx`，一節一事），表格那格放錨點連結。
+- 三欄以上都是長文字 → 整張表廢掉，改成「每項一個小標 ＋ 段落」。
+
+**HTML 報告**：
+- `table-layout: fixed` ＋ 每欄明確 `width`，否則長欄會把其他欄壓扁。
+- 短值欄 `white-space: nowrap`；只有長欄允許換行。
+- 細節包 `<details>` 放在表格下方，不要塞進格子。
+- 寬表格外層包 `overflow-x: auto`，不要為了塞進畫面而縮欄。
+
+**JIRA**：
+- Jira 表格更窄，長文字必爆版。長內容一律改 `h3` 分節 ＋ bullet，表格只留純對照矩陣（例：環境 × 狀態）。
+- log／request/response 一律用 code block 或收合，不可放進表格格子。
+
 ## Design Review 文件（產 Confluence design 文件時一律照此規格）
 
 **IMPORTANT：**產出 Design Review 文件時，一律照公司正式範本
