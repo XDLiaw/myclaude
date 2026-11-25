@@ -29,17 +29,59 @@ allowed-tools:
 
 ## 告警規則存放位置
 
+**CRITICAL — 公司有兩套完全獨立的 ElastAlert，慣例完全相反。動手前一定要先判斷是哪一套。**
+
+### 先判斷：電支（jkopay）還是金科（jkos）
+
+依**服務**判斷，不是依團隊：
+
+| 體系 | 服務範例 | 判斷依據 |
+|------|---------|---------|
+| **電支 jkopay** | `jkopay-insurance`（保險）、`jkopay-ebpp`（繳費）、campaign、coupon、marketing、cobranded | repo 在 `gitlab.jkopay.app` |
+| **金科 jkos** | `jkos-donation`（捐款）、`jkos-svc-transporthub`（叫車） | repo 在 `gitlab.jkos.app` |
+
+不確定就問使用者，或用 `glab api --hostname <host> "projects?search=<service>"` 兩邊各查一次。
+
+### 電支（jkopay）— K8s + Kustomize + Argo CD
+
 ```
-elastalert/deployments/ansible/inventories/{env}/group_vars/common/files/elastalert/rules/{team}/{domain}/
+gitlab.jkopay.app → devops/gitops
+sre/elastalert/kustomize/overlays/{prod,sit}/idc/rules/{team}/{domain}/
 ```
 
-### 環境對照
+本機通常已 clone 在 `C:\Workspace\gitops`。
 
-| 環境 | 目錄 | 檔名前綴 | Kibana |
-|------|------|----------|--------|
-| PROD | `prod/` | (無) | `kibana.jkopay.com` |
-| UAT | `sit/` | `uat_` | `sit-kibana.jkopay.app` |
-| SIT | `sit/` | (無) | `http://172.16.12.138:5601` |
+| 環境 | 目錄 | 檔名前綴 | Kibana | ES |
+|------|------|----------|--------|-----|
+| PROD | `overlays/prod/idc/rules/` | (無) | `log-kibana-gcp.jkopay.com` | GCP |
+| UAT | `overlays/sit/idc/rules/` | `uat_` | `log-kibana-gcp.jkopay.app` | GCP |
+| SIT | `overlays/sit/idc/rules/` | (無) | `log-kibana-gcp.jkopay.app` | GCP |
+
+**index 命名（2026-11 起，不帶日期、不開 `use_strftime_index`）**：
+
+- k8s：`logs-{ns}-{env}-{app}`
+- Swarm：`logs-swarm-{env}-{service}`
+- VM：`logs-vm-{env}-*`
+
+### 金科（jkos）— VM + Jenkins + Ansible
+
+```
+gitlab.jkos.app → monitoring/service-check
+elastalert/deployments/ansible/inventories/{prod,sit}/group_vars/common/files/elastalert/rules/{team}/{domain}/
+```
+
+| 環境 | 目錄 | Kibana | ES |
+|------|------|--------|-----|
+| PROD | `inventories/prod/` | `kibana.jkos.com` | IDC（見同路徑的 `config.yaml`） |
+| SIT | `inventories/sit/` | `sit-kibana.jkos.app` | IDC |
+
+**index 命名（維持舊式，要帶日期、要開 `use_strftime_index: true`）**：`prod-jkos-donation-*`、`prod-jkos-svc-transporthub-*`、`sit-jkos-donation-*`。
+
+**不要**把電支的 GCP data stream 命名套到金科——金科的 log 不進 GCP ES（`log-es-gcp.jkopay.com` 是 jkopay 專用），套了會查不到任何資料、靜默漏報。
+
+### 背景（2026-11-25）
+
+SRE 把電支的 Production ElastAlert 從 IDC ES 切到 GCP ES，IDC Elasticsearch / Kibana 於 12/3 下架。**金科不在下架範圍**，維持原樣。所以兩套的 host 與 index 慣例從此分岔，別再混用。
 
 **注意**: UAT 和 SIT 的告警都放在 `sit/` 目錄下，UAT 以 `uat_` 為檔名前綴區分。
 
@@ -104,8 +146,9 @@ elastalert/deployments/ansible/inventories/{env}/group_vars/common/files/elastal
 在生成檔案前，**必須**查詢同 team/domain 的現有告警，提取：
 
 ```bash
-# 查詢同目錄的現有告警
-Glob: **/prod/**/rules/{team}/{domain}/*.yaml
+# 電支：Glob C:\Workspace\gitops\sre\elastalert\kustomize\overlays\prod\idc\rules\{team}\**\*.yaml
+# 金科：glab api --hostname gitlab.jkos.app \
+#   "projects/monitoring%2Fservice-check/repository/tree?recursive=true&per_page=100&path=<rules 路徑>"
 
 # 從現有告警提取：
 # 1. Slack webhook URL
@@ -171,7 +214,16 @@ flatline 沒有 realert 會導致每次 rule evaluation（預設每 5 分鐘）�
 - 時間範圍合理
 
 **注意**：Kibana 是 SPA，從同一個 Discover 頁面切換 hash 可能不會更新 query。
-需要先導航到 `kibana.jkopay.com/s/rd3/app/home`，再導航到目標 URL。
+需要先導航到該環境 Kibana 的 `/s/rd3/app/home`，再導航到目標 URL。
+
+**data view id 不可跨環境沿用**：GCP Kibana 的 data view 是重建的，id 與舊 IDC 完全不同，且 URL 的 `filters` 區段內也有 `index:<uuid>`，同一條規則可能出現多次。取得 id 的方式——登入該 Kibana 後執行：
+
+```js
+// 在 Kibana 頁面的 console / browser_evaluate
+await (await fetch('/s/rd3/api/data_views', {headers:{'kbn-xsrf':'true'}})).json()
+```
+
+（PROD ES 帳號是 `editor`，讀不到 `.kibana*` 系統索引，所以不能走 ES API 撈，只能從 Kibana 網頁取。）
 
 ### 步驟 6：輸出設定說明
 
@@ -299,27 +351,44 @@ opsgenie_tags: ["{env}", "jkopay", "{domain}", "{tags}"]
 
 ## 常見 Index Pattern
 
-以下是已知的 index pattern（根據環境不同有不同前綴）：
+### 電支（GCP data stream，不帶日期）
 
 | Team/Domain | PROD Index | 說明 |
 |-------------|-----------|------|
-| rd3/insurance API | `rd3-prod-jkopay-insurance-api-%Y.%m.%d*` | 保險 API 服務 |
-| rd3/insurance Argo Job | `rd3-prod-rd3-jkopay-insurance-argojob-wt-*` | 保險 Argo Workflow Job |
-| rd3/cobranded | `prod-jkopay-cobranded-*` | 聯名卡服務 |
-| rd3/campaign-ap | `prod-jkopay-campaign-ap-%Y.%m.%d*` | 活動平台 |
+| rd3/insurance API | `logs-rd3-prod-jkopay-insurance-api` | 保險 API 服務 |
+| rd3/insurance Argo Job | `logs-rd3-prod-rd3-jkopay-insurance-argojob-wt` | 保險 Argo Workflow Job |
+| rd3/api-gateway | `logs-rd3-prod-jkopay-api-gateway*` | API Gateway |
 
-**重要**：Index pattern 可能隨時間變動，建議優先從同 team 的現有告警中查找，或用 Playwright 到 Kibana 確認。
+### 金科（舊式，帶日期 + `use_strftime_index: true`）
+
+| Team/Domain | PROD Index | 說明 |
+|-------------|-----------|------|
+| rd3/donation | `prod-jkos-donation-*` | 捐款 |
+| rd3/transporthub | `prod-jkos-svc-transporthub-*` | 叫車 |
+
+**重要**：Index pattern 可能隨時間變動，建議優先從同 team 的現有告警中查找，或直接用對應的 `elasticsearch` / `elasticsearch-prod` MCP 查一次確認有資料（金科的 log 不在這兩座 GCP ES 上，要改用 Kibana 網頁確認）。
 
 ## Kibana 環境
 
+### 電支（jkopay）
+
 | 環境 | URL | 空間 |
 |------|-----|------|
-| PROD | `https://kibana.jkopay.com` | `/s/rd3/` |
-| UAT | `https://sit-kibana.jkopay.app` | `/s/rd3/` |
-| SIT | `http://172.16.12.138:5601` | `/s/rd3/` |
+| PROD | `https://log-kibana-gcp.jkopay.com` | `/s/rd3/` |
+| SIT / UAT | `https://log-kibana-gcp.jkopay.app` | `/s/rd3/` |
+
+舊的 `kibana.jkopay.com`、`sit-kibana.jkopay.app` 預計 2026-12-03 下架，不要再用。
+
+### 金科（jkos）
+
+| 環境 | URL | 空間 |
+|------|-----|------|
+| PROD | `https://kibana.jkos.com` | `/s/rd3/` |
+| SIT | `https://sit-kibana.jkos.app` | `/s/rd3/` |
 
 ## 注意事項
 
+0. **先判斷電支還是金科** — 兩套 repo、佈署方式、ES、Kibana、index 命名全部不同，搞錯會放錯 repo 且規則永遠命中 0 筆（靜默漏報）。見「告警規則存放位置」。
 1. **先查慣例再生成** — 不同 team/domain 有不同的 slack webhook、opsgenie key、命名風格
 2. **驗證是必要步驟** — 每次建立或修改告警後，必須用 Playwright 驗證 query 和 Kibana link
 3. **Kibana SPA 注意** — 驗證 Kibana link 時，先導航到 home 頁面再開啟目標 URL，避免 SPA cache 問題
