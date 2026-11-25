@@ -87,7 +87,34 @@ When Eric writes in English, ALWAYS review his grammar, word choice, and phrasin
   - 個資：身分證號、護照號碼、信用卡卡號、完整手機號／市話、完整地址、生日——只保留判斷情境所需的部分位數（例如身分證前 3 碼＋末 2 碼，中間用 `*` 補；系統本身回傳的遮罩格式如 `S22*****53` 可直接沿用，不用還原）
 - **可保留**（非機敏、且是判斷根因所需）：URL path、業務欄位（單號、金額、狀態碼、時間戳）、traceId／correlationId、錯誤代碼/訊息、帳號識別碼（街口帳號、jkosId 等，視情境需要保留，但不可連同該帳號的身分證號／密碼一起完整曝光）
 
+## Subagent 使用規則（何時可自行派、何時不要）
+
+**IMPORTANT：**為避免污染主 session 的 context，下列情境**可自行派 subagent，不必先問**。判準一句話：**讀很多、結論很短，且任務能一次講清楚**。
+
+**可自行派**：
+- **大範圍搜尋／盤點**：跨 repo／多目錄找用法、找慣例、確認某實作存不存在（用 `Explore`）。
+- **讀大量原始資料只取結論**：ES／Kibana 撈大量 log、長 PDF、網頁、巨大 JSON 回應。
+- **平行獨立子任務**：多面向 review、多服務同時調查，彼此無依賴。
+- **長輸出的驗證**：跑 build／測試，只回 pass/fail ＋ 失敗摘要。
+- **試錯型探針**：過程會髒（反覆改設定找原因），只要最後結論。
+
+**不要派，主 session 自己做**：
+- **接下來要繼續改的程式碼**：細節必須留在主 context。
+- **已知檔案／符號的單點查找**：直接 grep 更快。
+- **需要跨步驟累積狀態**的任務。
+- **需要來回澄清需求**的任務（subagent 問不到 Eric）。
+- **有副作用的操作**：commit／push／DB／外部寫入／刪檔——一律留在主 session，依既有確認規則處理。
+
+**派出去時**：prompt 要寫清楚回傳格式與範圍（subagent 不繼承主 session 的決策細節，其輸出也不會顯示給 Eric，要自己轉述重點）。
+
 ## Infrastructure / Resources
+
+**程式碼倉庫與 artifact 倉庫（找 repo 先查這裡，不要問）**
+- GitLab（RD3 等團隊主力，`rd3/*` 在此）：https://gitlab.jkopay.app/dashboard/projects
+- GitLab（另一組 host，`rd3-jkos/*` 在此，例：`rd3-jkos/jkos-donation` 捐款）：https://gitlab.jkos.app/dashboard/projects
+- Maven artifact（**內部 SDK 的原始碼也在這裡**，兩個 gitlab host 都搜不到）：https://packages.jkos.com/library/maven
+  例：`library/maven/jkos-utils`（artifactId `jkos-util`）、`library/maven/onlinepay-api-client`、`library/maven/merchant-module-api-client`
+- 查詢用 glab CLI（見下方 GitLab 段）；跨 host 用 `glab api --hostname <host> ...`。一個 host 找不到就換另一個，兩個都找不到再問。
 
 **Kibana (log query)** — username for both environments: `eric.liao`. Passwords are NOT stored here; retrieve from password manager.
 - SIT / UAT: https://log-kibana-gcp.jkopay.app
