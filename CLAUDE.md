@@ -107,37 +107,7 @@ When Eric writes in English, ALWAYS review his grammar, word choice, and phrasin
 
 **派出去時**：prompt 要寫清楚回傳格式與範圍（subagent 不繼承主 session 的決策細節，其輸出也不會顯示給 Eric，要自己轉述重點）。
 
-## Infrastructure / Resources
-
-**程式碼倉庫與 artifact 倉庫（找 repo 先查這裡，不要問）**
-- GitLab（RD3 等團隊主力，`rd3/*` 在此）：https://gitlab.jkopay.app/dashboard/projects
-- GitLab（另一組 host，`rd3-jkos/*` 在此，例：`rd3-jkos/jkos-donation` 捐款）：https://gitlab.jkos.app/dashboard/projects
-- Maven artifact（**內部 SDK 的原始碼也在這裡**，兩個 gitlab host 都搜不到）：https://packages.jkos.com/library/maven
-  例：`library/maven/jkos-utils`（artifactId `jkos-util`）、`library/maven/onlinepay-api-client`、`library/maven/merchant-module-api-client`
-- 查詢用 glab CLI（見下方 GitLab 段）；跨 host 用 `glab api --hostname <host> ...`。一個 host 找不到就換另一個，兩個都找不到再問。
-
-**Kibana (log query)** — username for both environments: `eric.liao`. Passwords are NOT stored here; retrieve from password manager.
-- SIT / UAT: https://log-kibana-gcp.jkopay.app
-- PROD: https://log-kibana-gcp.jkopay.com
-
-Older (deprecated, will be decommissioned — do NOT use):
-- PROD (old): https://kibana.jkopay.com
-- SIT / UAT (old): unknown / not recorded
-
-**Reading logs via MCP (preferred over Playwright/Kibana web)** — global `elasticsearch` MCP servers in `~/.claude.json` (`mcpServers`) query the log clusters directly. Requires Docker running (uses `docker.elastic.co/mcp/elasticsearch`, one-shot `--rm` container per call).
-- `elasticsearch` → SIT **and** UAT (one cluster `sit-operator-elastic`). Holds both K8s `rd3-{sit,uat}-*` data streams (**business logs are here**) and residual Swarm `swarm-{sit,uat}-*` data streams (metrics + RequestLoggingFilter only). Endpoint: `https://log-es-gcp.jkopay.app`. Auth: API key. NOTE: `rd3-*` has no `environment` field (use `kubernetes.*` labels); don't filter on `environment` or you'll silently drop business logs and see only Swarm metrics.
-- `elasticsearch-prod` → PROD. Endpoint: `https://log-es-gcp.jkopay.com`. Auth: basic (username `eric.liao`).
-- Secrets are NOT in config files — injected via env vars `${ES_SIT_API_KEY}` / `${ES_PROD_PASSWORD}` (set as Windows User env vars; changes require a full Claude Code restart).
-- Logs are structured JSON: level field is `level` (not `log.level`); there is no single `message` field. Common fields: `service`, `environment`, `traceId`, `thread`.
-- PROD account role is `editor`: `search` works, but `list_indices` / cluster monitor is denied (403) — query with index wildcards like `.ds-logs-*prod*<service>*` instead.
-
-## GitLab 操作（改用 glab CLI，勿用 MCP）
-
-**IMPORTANT:** 已移除 gitlab MCP（過去每個 session 常駐 ~1.5GB node），改用 glab CLI（單一執行檔、用完即退、零常駐）。做 GitLab 相關操作時一律優先用 glab，不要再嘗試 gitlab MCP。
-- 執行檔：`C:\Users\eric.liao\AppData\Local\Programs\glab\glab.exe`（PATH 更新後可直接 `glab`；新 shell 若找不到就用完整路徑）
-- 已認證 3 個 host（token 存於 `%LOCALAPPDATA%\glab-cli\config.yml`，明文，不在 public 的 `~/.claude` repo 內）：`gitlab.jkopay.app`、`gitlab.jkos.app`、`packages.jkos.com`
-- **分工**：GitLab 平台操作（MR、issue、CI、review、diff）用 glab；本機 git（`commit`/`push`/`branch`）仍用一般 `git`。
-- 在 repo 內 glab 會依 remote 自動選 host；跨 repo／非 repo 情境用 `glab api --hostname <host> <endpoint>`（例：`glab api --hostname gitlab.jkopay.app user`）。
+@CLAUDE.private.md
 
 ## Code Style
 
@@ -185,37 +155,6 @@ Older (deprecated, will be decommissioned — do NOT use):
 **JIRA**：
 - Jira 表格更窄，長文字必爆版。長內容一律改 `h3` 分節 ＋ bullet，表格只留純對照矩陣（例：環境 × 狀態）。
 - log／request/response 一律用 code block 或收合，不可放進表格格子。
-
-## Design Review 文件（產 Confluence design 文件時一律照此規格）
-
-**IMPORTANT：**產出 Design Review 文件時，一律照公司正式範本
-[設計審查範本(Design Review Template)](https://jkopay.atlassian.net/wiki/spaces/Engineerin/pages/44335508/Design+Review+Template)（Engineering space, pageId `44335508`），**不要自己歸納既有文件的骨架、也不要自創章節**。
-
-**文件命名**：`[{service name}]{requirement} ({需求名稱}) Design Review`
-例：`[jkopay-app-svc] Referral Code (好友推薦碼) Design Review`
-
-**章節骨架（固定，不可增刪層級）**：
-
-```
-1. 摘要（Abstract）
-   1.1 需求背景 (PRD)        ← 附 PRD／JIRA 連結，簡述背景與技術 context
-   1.2 名詞定義與統一命名      ← 條列術語，釐清同義詞一律用哪個稱呼
-2. 系統架構
-   2.1 資訊流中的物件         ← 依流程分 2.1.1 / 2.1.2…，各放流程圖；需含錯誤處理
-   2.2 系統架構全圖
-3. 實作細節
-   3.1 溝通介面              ← 3.1.1 行動端 API / 3.1.2 網頁端 API / 3.1.3 Kafka…
-   3.2 資料表及欄位的設計
-       3.2.1 實體關係圖
-       3.2.2 資料表架構       ← 每張表一個子節
-4. 專案管理                  ← 表格：Team | Task | Assignee | Estimated time | Start Date
-```
-
-**填寫原則**：
-- 範本要求、但本次需求沒有的章節，**保留標題並填「無」或「不適用」並簡述原因**，不要刪章節、也不要編造內容。
-- 流程圖用 mermaid，**先用 `confluence-mermaid` skill 轉成 Confluence 格式**再放進頁面，不要貼原始碼。
-- 建立／更新頁面時 `contentFormat` 用 **`html`**（markdown 會略過 macro）；寫完讀回確認圖表與 macro 正常。
-- 放哪個 space／parent 依該產品線既有慣例（例如捐款掛在 RD3 的 `[NC] Design Review` 底下）。
 
 ## Testing Conventions
 
